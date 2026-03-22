@@ -3,27 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Expected Utility Decision Tool</title>
+  <title>Decision Engine</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0d0f18;
-      --surface: #161927;
-      --surface2: #1e2235;
-      --surface3: #252a40;
-      --border: #2a2f47;
-      --accent: #6c63ff;
-      --accent2: #a78bfa;
-      --text: #e8eaf0;
-      --muted: #6b7296;
-      --muted2: #9099b8;
-      --good: #34d399;
-      --bad: #f87171;
-      --warn: #fbbf24;
-      --info: #60a5fa;
-      --radius: 14px;
-      --radius-sm: 8px;
+      --bg:       #0d0f18;
+      --s1:       #161927;
+      --s2:       #1d2133;
+      --s3:       #242840;
+      --border:   #2a2f47;
+      --accent:   #6c63ff;
+      --accent2:  #a78bfa;
+      --text:     #e8eaf0;
+      --muted:    #6b7296;
+      --muted2:   #9099b8;
+      --good:     #34d399;
+      --bad:      #f87171;
+      --warn:     #fbbf24;
+      --info:     #60a5fa;
+      --r:        14px;
+      --rs:       8px;
     }
 
     body {
@@ -34,416 +34,259 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 1rem 5rem;
-      line-height: 1.5;
+      padding: 2rem 1rem 6rem;
     }
 
-    header {
-      text-align: center;
-      margin-bottom: 2.5rem;
-      max-width: 500px;
-    }
+    header { text-align: center; margin-bottom: 2.5rem; }
     header h1 {
-      font-size: 1.9rem;
-      font-weight: 800;
-      letter-spacing: -0.8px;
+      font-size: 1.85rem; font-weight: 800; letter-spacing: -0.8px;
       background: linear-gradient(130deg, #a78bfa, #6c63ff, #60a5fa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    header p {
-      color: var(--muted2);
-      margin-top: 0.5rem;
-      font-size: 0.95rem;
-    }
+    header p { color: var(--muted2); margin-top: 0.4rem; font-size: 0.9rem; }
 
-    .container { width: 100%; max-width: 760px; }
+    .wrap { width: 100%; max-width: 740px; }
 
-    /* Progress */
-    .progress-wrap {
-      margin-bottom: 2rem;
-    }
-    .progress-steps {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      margin-bottom: 0.5rem;
-    }
-    .step-dot {
-      width: 34px; height: 34px;
-      border-radius: 50%;
+    /* ── Progress ─────────────────────────────────── */
+    .prog { display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; }
+    .prog-dot {
+      width: 32px; height: 32px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; font-weight: 700;
-      background: var(--surface2);
-      color: var(--muted);
-      border: 2px solid var(--border);
-      transition: all 0.3s;
-      z-index: 1;
-      flex-shrink: 0;
+      font-size: 0.78rem; font-weight: 700;
+      background: var(--s2); color: var(--muted);
+      border: 2px solid var(--border); transition: all .25s; flex-shrink: 0;
     }
-    .step-dot.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(108,99,255,0.2); }
-    .step-dot.done { background: var(--good); color: #000; border-color: var(--good); }
-    .step-dot.done::after { content: '✓'; }
-    .step-dot.done span { display: none; }
-    .step-conn { flex: 1; max-width: 70px; height: 2px; background: var(--border); transition: background 0.3s; }
-    .step-conn.done { background: var(--good); }
-    .step-labels {
-      display: flex;
-      justify-content: space-between;
-      padding: 0 0;
-    }
-    .step-label {
-      font-size: 0.7rem;
-      color: var(--muted);
-      text-align: center;
-      width: 34px;
-      flex-shrink: 0;
-    }
-    .step-label.active { color: var(--accent2); }
-    .step-label.done { color: var(--good); }
+    .prog-dot.on   { background: var(--accent); color:#fff; border-color:var(--accent); box-shadow: 0 0 0 4px rgba(108,99,255,.2); }
+    .prog-dot.done { background: var(--good); color:#000; border-color: var(--good); }
+    .prog-line { flex: 1; max-width: 80px; height: 2px; background: var(--border); transition: background .25s; }
+    .prog-line.done { background: var(--good); }
 
-    /* Cards */
+    /* ── Cards ────────────────────────────────────── */
     .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      margin-bottom: 1rem;
+      background: var(--s1); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 1.5rem; margin-bottom: 1rem;
     }
-    .card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 0.35rem;
-      color: var(--text);
-    }
-    .card-desc {
-      font-size: 0.85rem;
-      color: var(--muted2);
-      margin-bottom: 1.25rem;
-    }
+    .card-title  { font-size: 1.05rem; font-weight: 700; margin-bottom: .3rem; }
+    .card-desc   { font-size: .85rem; color: var(--muted2); margin-bottom: 1.25rem; line-height: 1.5; }
+    .section-lbl { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: .6rem; }
 
-    /* Inputs */
-    label { display: block; font-size: 0.82rem; color: var(--muted2); margin-bottom: 0.35rem; font-weight: 500; }
-    .field { margin-bottom: 1.1rem; }
-    input[type="text"], textarea, select {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      padding: 0.65rem 0.9rem;
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      font-family: inherit;
+    /* ── Form ─────────────────────────────────────── */
+    .field { margin-bottom: 1rem; }
+    label  { display:block; font-size:.82rem; color:var(--muted2); margin-bottom:.35rem; font-weight:500; }
+    input[type=text], input[type=number], textarea, select {
+      width: 100%; background: var(--s2); border: 1px solid var(--border);
+      border-radius: var(--rs); color: var(--text);
+      padding: .65rem .9rem; font-size: .95rem; outline: none; font-family: inherit;
+      transition: border-color .18s, box-shadow .18s;
     }
-    input[type="text"]:focus, textarea:focus, select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+    input[type=text]:focus, input[type=number]:focus, textarea:focus, select:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,.15);
     }
+    textarea { resize: vertical; min-height: 52px; }
     select { cursor: pointer; }
-    textarea { resize: vertical; min-height: 56px; }
+    input[type=number] { -moz-appearance: textfield; }
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
-    /* Buttons */
+    /* ── Buttons ──────────────────────────────────── */
     .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
-      padding: 0.6rem 1.2rem;
-      border-radius: var(--radius-sm);
-      border: none;
-      font-size: 0.9rem; font-weight: 600;
-      cursor: pointer;
-      transition: all 0.18s;
-      font-family: inherit;
-      line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+      padding: .6rem 1.2rem; border-radius: var(--rs); border: none;
+      font-size: .9rem; font-weight: 600; cursor: pointer; transition: all .18s; font-family: inherit;
     }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: #5a52e0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(108,99,255,0.4); }
-    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-primary { background: var(--accent); color:#fff; }
+    .btn-primary:hover { background:#5a52e0; transform:translateY(-1px); box-shadow:0 4px 14px rgba(108,99,255,.4); }
+    .btn-secondary { background: var(--s2); color: var(--text); border: 1px solid var(--border); }
     .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
     .btn-ghost { background: transparent; color: var(--muted2); border: 1px dashed var(--border); }
     .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-danger { background: transparent; color: var(--bad); border: 1px solid transparent; padding: 0.35rem 0.6rem; font-size: 0.8rem; }
-    .btn-danger:hover { border-color: var(--bad); background: rgba(248,113,113,0.08); }
-    .btn-lg { padding: 0.8rem 2.2rem; font-size: 1rem; border-radius: 10px; }
-    .action-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; gap: 1rem; }
+    .btn-icon { background: transparent; color: var(--muted); border: none; padding: .3rem .5rem; font-size: .9rem; cursor: pointer; border-radius: 6px; }
+    .btn-icon:hover { background: var(--s3); color: var(--bad); }
+    .btn-lg { padding: .8rem 2rem; font-size: 1rem; border-radius: 10px; }
+    .act { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; gap: 1rem; }
 
-    /* Sliders */
-    .slider-wrap { margin: 0.6rem 0; }
-    .slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
-    .slider-ends { font-size: 0.75rem; color: var(--muted); }
-    .slider-val { font-weight: 700; font-size: 0.95rem; color: var(--text); background: var(--surface3); padding: 0.2rem 0.5rem; border-radius: 6px; min-width: 42px; text-align: center; }
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 100%; height: 6px;
-      border-radius: 3px; background: var(--border);
-      outline: none; cursor: pointer;
+    /* ── Sliders ──────────────────────────────────── */
+    .sl-wrap { display: flex; align-items: center; gap: .65rem; }
+    .sl-val { font-weight: 700; font-size: .9rem; min-width: 38px; text-align: center;
+      background: var(--s3); border-radius: 6px; padding: .2rem .45rem; }
+    input[type=range] {
+      -webkit-appearance: none; flex: 1; height: 6px;
+      border-radius: 3px; background: var(--border); outline: none; cursor: pointer;
     }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px; height: 20px; border-radius: 50%;
-      background: var(--accent); cursor: pointer;
-      border: 2px solid #fff;
-      transition: transform 0.1s, box-shadow 0.1s;
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+      background: var(--accent); border: 2px solid #fff; cursor: pointer; transition: transform .1s;
     }
-    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); box-shadow: 0 0 0 4px rgba(108,99,255,0.3); }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .sl-ends { display: flex; justify-content: space-between; font-size: .72rem; color: var(--muted); margin-top: .25rem; }
 
-    /* Dimension chips */
-    .dims-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 0.6rem;
-      margin-bottom: 1rem;
-    }
-    .dim-chip {
-      background: var(--surface2);
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      padding: 0.75rem 0.9rem;
-      cursor: pointer;
-      transition: all 0.18s;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      user-select: none;
-    }
-    .dim-chip:hover { border-color: var(--accent); }
-    .dim-chip.selected { border-color: var(--accent); background: rgba(108,99,255,0.12); }
-    .dim-chip .dim-emoji { font-size: 1.1rem; }
-    .dim-chip .dim-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
-
-    .dim-weights-list { display: flex; flex-direction: column; gap: 0.75rem; }
-    .dim-weight-row {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.9rem 1rem;
-    }
-    .dim-weight-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
-    .dim-weight-label { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.9rem; }
-    .stars { display: flex; gap: 0.2rem; }
-    .star {
-      font-size: 1.1rem; cursor: pointer; color: var(--border);
-      transition: color 0.1s, transform 0.1s;
-    }
+    /* ── Stars ────────────────────────────────────── */
+    .stars { display: flex; gap: .15rem; }
+    .star { font-size: 1.05rem; cursor: pointer; color: var(--border); transition: color .1s, transform .1s; line-height: 1; }
     .star.on { color: var(--warn); }
     .star:hover { transform: scale(1.2); }
 
-    /* Options */
-    .option-pill {
-      display: flex; align-items: center; gap: 0.75rem;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 0.75rem 1rem;
-      margin-bottom: 0.6rem;
+    /* ── Toggle chips ─────────────────────────────── */
+    .chip-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .chip {
+      padding: .4rem .9rem; border-radius: 20px; border: 1px solid var(--border);
+      background: var(--s2); color: var(--muted2);
+      font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .18s; font-family: inherit;
     }
-    .option-letter {
-      width: 28px; height: 28px; border-radius: 50%;
+    .chip:hover { border-color: var(--accent2); color: var(--accent2); }
+    .chip.on { border-color: var(--accent); background: rgba(108,99,255,.15); color: var(--accent2); }
+
+    /* ── Type badges ──────────────────────────────── */
+    .type-badge {
+      display: inline-block; padding: .18rem .55rem; border-radius: 20px;
+      font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .tb-score { background: rgba(96,165,250,.15); color: var(--info); }
+    .tb-number { background: rgba(52,211,153,.15); color: var(--good); }
+    .tb-prob   { background: rgba(167,139,250,.15); color: var(--accent2); }
+    .tb-yesno  { background: rgba(251,191,36,.15); color: var(--warn); }
+
+    /* ── Factor cards ─────────────────────────────── */
+    .factor-card {
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem; margin-bottom: .65rem;
+    }
+    .factor-header { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+    .factor-meta { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-top: .35rem; }
+    .factor-name-big { font-weight: 700; font-size: .95rem; }
+    .dir-toggle {
+      display: flex; gap: 0;
+      background: var(--s3); border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+    }
+    .dir-btn {
+      padding: .25rem .65rem; font-size: .75rem; font-weight: 600; cursor: pointer;
+      background: transparent; border: none; color: var(--muted); font-family: inherit; transition: all .15s;
+    }
+    .dir-btn.on { background: var(--accent); color: #fff; }
+
+    /* ── Quick-add chips ──────────────────────────── */
+    .quick-add-chip {
+      padding: .35rem .8rem; border-radius: 8px;
+      border: 1px dashed var(--border);
+      background: transparent; color: var(--muted2);
+      font-size: .8rem; font-weight: 600; cursor: pointer;
+      transition: all .18s; font-family: inherit;
+    }
+    .quick-add-chip:hover { border-color: var(--accent2); color: var(--accent2); border-style: solid; }
+
+    /* ── Value entry ──────────────────────────────── */
+    .value-factor-block {
+      background: var(--s1); border: 1px solid var(--border);
+      border-radius: var(--r); margin-bottom: 1rem; overflow: hidden;
+    }
+    .vfb-header {
+      background: var(--s2); border-bottom: 1px solid var(--border);
+      padding: .9rem 1.25rem;
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+    }
+    .vfb-title { display: flex; align-items: center; gap: .6rem; font-weight: 700; }
+    .vfb-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .75rem; }
+    .vfb-opt-row { display: flex; align-items: center; gap: 1rem; }
+    .opt-label { width: 130px; flex-shrink: 0; font-size: .85rem; color: var(--muted2); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Yes/No toggle */
+    .yn-toggle { display: flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .yn-btn {
+      flex: 1; padding: .45rem .8rem; font-size: .85rem; font-weight: 600;
+      background: var(--s3); border: none; color: var(--muted);
+      cursor: pointer; font-family: inherit; transition: all .18s;
+    }
+    .yn-btn.yes.on { background: var(--good); color: #000; }
+    .yn-btn.no.on  { background: var(--bad);  color: #fff; }
+
+    /* ── Option pill ──────────────────────────────── */
+    .opt-pill {
+      display: flex; align-items: center; gap: .7rem;
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: 10px; padding: .7rem 1rem; margin-bottom: .6rem;
+    }
+    .opt-letter {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; font-weight: 700;
-      background: var(--accent); color: #fff;
-      flex-shrink: 0;
+      font-size: .78rem; font-weight: 700; background: var(--accent); color: #fff;
     }
 
-    /* Scenario cards */
-    .option-block {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 1.25rem;
-      overflow: hidden;
+    /* ── Results ──────────────────────────────────── */
+    .winner-box {
+      background: linear-gradient(135deg, rgba(108,99,255,.18), rgba(52,211,153,.08));
+      border: 1px solid rgba(108,99,255,.35); border-radius: var(--r);
+      padding: 1.5rem; text-align: center; margin-bottom: 1rem;
     }
-    .option-block-header {
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 1.25rem;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .option-block-name {
-      font-weight: 700; font-size: 1rem;
-      display: flex; align-items: center; gap: 0.6rem;
-    }
-    .option-block-body { padding: 1.25rem; }
+    .winner-box .wlbl { font-size: .72rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent2); margin-bottom: .4rem; }
+    .winner-box .wname { font-size: 1.65rem; font-weight: 800; margin-bottom: .3rem; }
+    .winner-box .wsub { font-size: .88rem; color: var(--muted2); }
+    .gut-line { margin-top: .75rem; font-size: .85rem; }
+    .gut-ok   { color: var(--good); }
+    .gut-warn { color: var(--warn); }
 
-    .scenario-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 0.75rem;
+    .res-card {
+      background: var(--s1); border: 1px solid var(--border);
+      border-radius: var(--r); margin-bottom: 1rem; overflow: hidden;
     }
-    .scenario-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 0.75rem;
-    }
-    .scenario-label {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-weight: 700; font-size: 0.9rem;
-    }
-    .scenario-badge {
-      padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .badge-pessimistic { background: rgba(248,113,113,0.15); color: var(--bad); }
-    .badge-realistic   { background: rgba(96,165,250,0.15);  color: var(--info); }
-    .badge-optimistic  { background: rgba(52,211,153,0.15);  color: var(--good); }
-    .badge-custom      { background: rgba(251,191,36,0.15);  color: var(--warn); }
-
-    .prob-row {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.6rem 0;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 0.75rem;
-    }
-    .prob-label { font-size: 0.82rem; color: var(--muted2); font-weight: 500; white-space: nowrap; }
-    .prob-fill { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .prob-fill-inner { height: 100%; border-radius: 3px; background: var(--accent); transition: width 0.2s; }
-    .prob-sum-badge {
-      font-size: 0.78rem; padding: 0.25rem 0.6rem; border-radius: 20px; font-weight: 600;
-    }
-    .prob-sum-ok   { background: rgba(52,211,153,0.12); color: var(--good); }
-    .prob-sum-warn { background: rgba(251,191,36,0.12); color: var(--warn); }
-    .prob-sum-over { background: rgba(248,113,113,0.12); color: var(--bad); }
-
-    .dim-ratings { display: flex; flex-direction: column; gap: 0.5rem; }
-    .dim-rating-row {
-      display: grid; grid-template-columns: 130px 1fr 46px;
-      align-items: center; gap: 0.75rem;
-    }
-    .dim-rating-name { font-size: 0.82rem; color: var(--muted2); display: flex; align-items: center; gap: 0.35rem; }
-    .dim-rating-val { font-weight: 700; font-size: 0.9rem; text-align: center; }
-    .rating-positive { color: var(--good); }
-    .rating-negative { color: var(--bad); }
-    .rating-neutral  { color: var(--muted2); }
-
-    /* Results */
-    .winner-banner {
-      background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(52,211,153,0.1));
-      border: 1px solid rgba(108,99,255,0.35);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      text-align: center;
-      margin-bottom: 1.25rem;
-    }
-    .winner-banner .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent2); margin-bottom: 0.5rem; }
-    .winner-banner .winner-name { font-size: 1.6rem; font-weight: 800; color: var(--text); margin-bottom: 0.3rem; }
-    .winner-banner .winner-sub { font-size: 0.9rem; color: var(--muted2); }
-    .gut-note { margin-top: 0.75rem; font-size: 0.85rem; }
-    .gut-agree { color: var(--good); }
-    .gut-disagree { color: var(--warn); }
-
-    .result-option-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 1rem;
-      overflow: hidden;
-    }
-    .result-option-card.winner { border-color: rgba(108,99,255,0.5); }
-    .result-header {
-      padding: 1.1rem 1.25rem;
+    .res-card.best { border-color: rgba(108,99,255,.5); }
+    .res-top {
+      padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--border);
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid var(--border);
     }
-    .result-name { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.6rem; }
-    .result-ev { font-size: 1.5rem; font-weight: 800; }
-    .ev-pos { color: var(--good); }
-    .ev-neg { color: var(--bad); }
-    .ev-zero { color: var(--warn); }
-    .winner-star { color: var(--warn); font-size: 1rem; }
+    .res-name { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: .6rem; }
+    .res-score { font-size: 1.5rem; font-weight: 800; }
+    .score-hi { color: var(--good); }
+    .score-lo { color: var(--bad); }
+    .score-md { color: var(--warn); }
 
-    .result-body { padding: 1.25rem; }
+    .res-body { padding: 1.25rem; }
+    .res-bar-wrap { height: 8px; background: var(--border); border-radius: 4px; margin: .75rem 0 1.25rem; overflow: hidden; }
+    .res-bar { height: 100%; border-radius: 4px; transition: width .6s ease; }
 
-    .ev-bar-wrap { height: 8px; background: var(--border); border-radius: 4px; margin: 0.75rem 0 1.25rem; overflow: hidden; }
-    .ev-bar { height: 100%; border-radius: 4px; transition: width 0.7s ease; }
-
-    .dim-breakdown { display: flex; flex-direction: column; gap: 0.5rem; }
-    .dim-breakdown-row {
-      display: grid; grid-template-columns: 140px 1fr 54px;
-      align-items: center; gap: 0.75rem;
+    .factor-bar-row {
+      display: grid; grid-template-columns: 160px 1fr 50px;
+      align-items: center; gap: .75rem; margin-bottom: .5rem;
     }
-    .dim-br-label { font-size: 0.82rem; color: var(--muted2); display: flex; align-items: center; gap: 0.35rem; }
-    .dim-br-bar-wrap { position: relative; height: 6px; background: var(--border); border-radius: 3px; }
-    .dim-br-bar { position: absolute; height: 100%; border-radius: 3px; transition: width 0.5s; }
-    .dim-br-val { font-size: 0.82rem; font-weight: 600; text-align: right; }
+    .fbar-label { font-size: .82rem; color: var(--muted2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fbar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .fbar-fill  { height: 100%; border-radius: 3px; transition: width .5s; }
+    .fbar-val   { font-size: .82rem; font-weight: 600; text-align: right; }
+    .v-hi { color: var(--good); }
+    .v-lo { color: var(--bad); }
+    .v-md { color: var(--warn); }
+
+    .insight-box {
+      background: var(--s2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 1.25rem; margin-bottom: 1rem;
+    }
+    .insight-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: .75rem; }
+    .insight-row {
+      display: flex; gap: .65rem; align-items: flex-start;
+      padding: .55rem 0; border-bottom: 1px solid var(--border); font-size: .85rem;
+    }
+    .insight-row:last-child { border-bottom: none; }
+    .insight-icon { flex-shrink: 0; font-size: .95rem; margin-top: .1rem; }
+    .insight-text { color: var(--muted2); line-height: 1.55; }
+    .insight-text strong { color: var(--text); }
 
     details { margin-top: 1rem; }
-    summary { cursor: pointer; font-size: 0.82rem; color: var(--muted); font-weight: 600; padding: 0.3rem 0; }
+    summary { cursor: pointer; font-size: .82rem; color: var(--muted); font-weight: 600; }
     summary:hover { color: var(--accent2); }
-    .breakdown-table { margin-top: 0.75rem; }
-    .breakdown-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-      font-size: 0.82rem;
+    .detail-table { margin-top: .75rem; }
+    .dt-row {
+      display: flex; justify-content: space-between; padding: .38rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.04); font-size: .82rem;
     }
-    .breakdown-row:last-child { border-bottom: none; font-weight: 700; border-top: 1px solid var(--border); padding-top: 0.6rem; }
-    .breakdown-row .bl { color: var(--muted2); }
-    .breakdown-row .bc { color: var(--muted); font-family: monospace; font-size: 0.78rem; }
-    .breakdown-row .bv { font-weight: 600; min-width: 55px; text-align: right; }
-
-    /* Sensitivity */
-    .sensitivity-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      margin-bottom: 1rem;
-    }
-    .sensitivity-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted2); margin-bottom: 0.75rem; font-weight: 700; }
-    .sensitivity-item {
-      display: flex; gap: 0.75rem; align-items: flex-start;
-      padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;
-    }
-    .sensitivity-item:last-child { border-bottom: none; }
-    .sensitivity-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
-    .sensitivity-text { color: var(--muted2); line-height: 1.5; }
-    .sensitivity-text strong { color: var(--text); }
-
-    /* Risk stats */
-    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1.25rem; }
-    .stat-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.9rem;
-      text-align: center;
-    }
-    .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem; font-weight: 600; }
-    .stat-val { font-size: 1.2rem; font-weight: 800; }
-
-    /* Misc */
-    .radio-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .radio-btn {
-      padding: 0.5rem 1rem; border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--muted2);
-      cursor: pointer; font-size: 0.85rem; font-weight: 600;
-      transition: all 0.18s;
-      font-family: inherit;
-    }
-    .radio-btn.active { border-color: var(--accent); background: rgba(108,99,255,0.15); color: var(--accent2); }
-
-    .gut-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .gut-btn {
-      padding: 0.5rem 1rem; border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--muted2);
-      cursor: pointer; font-size: 0.85rem; font-weight: 600;
-      transition: all 0.18s;
-      font-family: inherit;
-    }
-    .gut-btn.active { border-color: var(--warn); background: rgba(251,191,36,0.12); color: var(--warn); }
+    .dt-row:last-child { border-bottom: none; font-weight: 700; border-top: 1px solid var(--border); padding-top: .55rem; }
+    .dt-row .dl { color: var(--muted2); }
+    .dt-row .dv { font-weight: 600; min-width: 50px; text-align: right; }
 
     .hidden { display: none !important; }
-    .tag { font-size: 0.72rem; padding: 0.2rem 0.55rem; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .tag-winner { background: rgba(108,99,255,0.2); color: var(--accent2); }
-    .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
 
     @media (max-width: 520px) {
-      .dim-rating-row { grid-template-columns: 100px 1fr 38px; }
-      .dim-breakdown-row { grid-template-columns: 100px 1fr 44px; }
-      .stats-row { grid-template-columns: 1fr 1fr; }
-      .dims-grid { grid-template-columns: repeat(2, 1fr); }
+      .factor-bar-row { grid-template-columns: 110px 1fr 40px; }
+      .opt-label { width: 90px; }
+      .vfb-opt-row { flex-direction: column; align-items: stretch; }
+      .opt-label { width: auto; }
     }
   </style>
 </head>
@@ -451,710 +294,668 @@
 
 <header>
   <h1>Decision Engine</h1>
-  <p>Multi-attribute expected utility analysis — structure your thinking, see what matters.</p>
+  <p>Define what matters. Weigh the tradeoffs. See what the numbers say.</p>
 </header>
 
-<div class="container">
+<div class="wrap">
 
-  <!-- Progress -->
-  <div class="progress-wrap">
-    <div class="progress-steps" id="progressSteps">
-      <div class="step-dot active" id="dot1"><span>1</span></div>
-      <div class="step-conn" id="conn12"></div>
-      <div class="step-dot" id="dot2"><span>2</span></div>
-      <div class="step-conn" id="conn23"></div>
-      <div class="step-dot" id="dot3"><span>3</span></div>
-      <div class="step-conn" id="conn34"></div>
-      <div class="step-dot" id="dot4"><span>4</span></div>
-      <div class="step-conn" id="conn45"></div>
-      <div class="step-dot" id="dot5"><span>5</span></div>
-    </div>
-    <div class="step-labels" style="padding:0 0px;">
-      <div class="step-label active" id="lbl1">Setup</div>
-      <div style="flex:1;max-width:70px;"></div>
-      <div class="step-label" id="lbl2">Values</div>
-      <div style="flex:1;max-width:70px;"></div>
-      <div class="step-label" id="lbl3">Options</div>
-      <div style="flex:1;max-width:70px;"></div>
-      <div class="step-label" id="lbl4">Scenarios</div>
-      <div style="flex:1;max-width:70px;"></div>
-      <div class="step-label" id="lbl5">Results</div>
-    </div>
+  <!-- Progress bar -->
+  <div class="prog" id="prog">
+    <div class="prog-dot on"  id="pd1">1</div>
+    <div class="prog-line"    id="pl12"></div>
+    <div class="prog-dot"     id="pd2">2</div>
+    <div class="prog-line"    id="pl23"></div>
+    <div class="prog-dot"     id="pd3">3</div>
+    <div class="prog-line"    id="pl34"></div>
+    <div class="prog-dot"     id="pd4">4</div>
   </div>
 
-  <!-- STEP 1: Setup -->
-  <div id="step1">
+  <!-- ══ STEP 1: Decision + Options ══════════════════ -->
+  <div id="s1">
     <div class="card">
-      <div class="card-title">What decision are you facing?</div>
-      <div class="card-desc">Be specific — a clear framing leads to better analysis.</div>
+      <div class="card-title">What are you deciding?</div>
+      <div class="card-desc">Describe the choice you're facing and add the options you're weighing.</div>
       <div class="field">
         <label>Decision</label>
-        <input type="text" id="decisionName" placeholder="e.g. Should I accept the job offer at Company X?" />
+        <input type="text" id="decName" placeholder="e.g. Which grad school should I attend?" />
       </div>
       <div class="field">
-        <label>Why is this decision hard? (optional)</label>
-        <textarea id="decisionHard" placeholder="e.g. Good salary but requires relocating. Current job is stable but boring." rows="2"></textarea>
-      </div>
-      <div class="field">
-        <label>When do you need to decide?</label>
-        <div class="radio-group" id="urgencyGroup">
-          <button class="radio-btn" data-val="today" onclick="setRadio('urgency','today',this)">Today</button>
-          <button class="radio-btn" data-val="week" onclick="setRadio('urgency','week',this)">This week</button>
-          <button class="radio-btn active" data-val="month" onclick="setRadio('urgency','month',this)">This month</button>
-          <button class="radio-btn" data-val="norushed" onclick="setRadio('urgency','norushed',this)">Not urgent</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Your risk attitude</label>
-        <div class="radio-group">
-          <button class="radio-btn" data-val="conservative" onclick="setRadio('risk','conservative',this)">🛡 Conservative<br><small style="font-weight:400;color:var(--muted)">Avoid losses</small></button>
-          <button class="radio-btn active" data-val="neutral" onclick="setRadio('risk','neutral',this)">⚖️ Neutral<br><small style="font-weight:400;color:var(--muted)">Pure EV</small></button>
-          <button class="radio-btn" data-val="bold" onclick="setRadio('risk','bold',this)">🚀 Bold<br><small style="font-weight:400;color:var(--muted)">Upside-seeking</small></button>
-        </div>
+        <label>Options <span style="color:var(--muted);font-weight:400">(add at least 2)</span></label>
+        <div id="optList"></div>
+        <button class="btn btn-ghost" style="width:100%;margin-top:.5rem" onclick="addOpt()">+ Add option</button>
       </div>
     </div>
-    <div class="action-row">
+
+    <div class="card">
+      <div class="card-title">Gut check</div>
+      <div class="card-desc">Before we do the math — what does your gut say? (We'll compare at the end.)</div>
+      <div class="chip-row" id="gutRow">
+        <span style="font-size:.85rem;color:var(--muted2)">Add options first…</span>
+      </div>
+    </div>
+
+    <div class="act">
       <div></div>
-      <button class="btn btn-primary btn-lg" onclick="s1Next()">Define What Matters →</button>
+      <button class="btn btn-primary btn-lg" onclick="s1Next()">Define Factors →</button>
     </div>
   </div>
 
-  <!-- STEP 2: Dimensions/values -->
-  <div id="step2" class="hidden">
+  <!-- ══ STEP 2: Factors ══════════════════════════════ -->
+  <div id="s2" class="hidden">
     <div class="card">
-      <div class="card-title">What dimensions of life does this affect?</div>
-      <div class="card-desc">Select everything that's relevant. You'll weight each dimension on the next screen.</div>
-      <div class="dims-grid" id="dimsGrid"></div>
-      <div style="display:flex;gap:0.6rem;align-items:center;margin-top:0.25rem;">
-        <input type="text" id="customDimInput" placeholder="Add a custom dimension..." style="flex:1;" />
-        <button class="btn btn-secondary" onclick="addCustomDim()">Add</button>
+      <div class="card-title">What factors matter in this decision?</div>
+      <div class="card-desc">Each factor gets a type (Score, Number, Probability, or Yes/No) and an importance weight. Add as many as you need — the app handles the math.</div>
+
+      <div style="margin-bottom:1.1rem">
+        <div class="section-lbl">Quick add common factors</div>
+        <div class="chip-row" id="quickChips"></div>
+      </div>
+
+      <div class="section-lbl">Your factors</div>
+      <div id="factorList"></div>
+
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-top:.5rem" id="addFactorForm">
+        <div class="section-lbl" style="margin-bottom:.75rem">Add a factor</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end;margin-bottom:.75rem">
+          <div class="field" style="margin:0">
+            <label>Factor name</label>
+            <input type="text" id="fName" placeholder="e.g. Annual salary, Department quality, Commute time…" />
+          </div>
+          <div class="field" style="margin:0">
+            <label>Type</label>
+            <select id="fType">
+              <option value="score">Score (1–10)</option>
+              <option value="number">Number (actual value)</option>
+              <option value="prob">Probability (%)</option>
+              <option value="yesno">Yes / No</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+          <div>
+            <div class="section-lbl" style="margin-bottom:.35rem">Importance</div>
+            <div class="stars" id="addStars"></div>
+          </div>
+          <div id="dirToggleWrap" class="hidden">
+            <div class="section-lbl" style="margin-bottom:.35rem">Direction</div>
+            <div class="dir-toggle">
+              <button class="dir-btn on" id="dirHigh" onclick="setDir(true)">↑ Higher better</button>
+              <button class="dir-btn"    id="dirLow"  onclick="setDir(false)">↓ Lower better</button>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addFactor()">Add Factor</button>
+        </div>
       </div>
     </div>
 
-    <div class="card hidden" id="dimWeightsCard">
-      <div class="card-title">How much does each dimension matter to you?</div>
-      <div class="card-desc">More stars = more weight in the expected utility calculation.</div>
-      <div class="dim-weights-list" id="dimWeightsList"></div>
-    </div>
-
-    <div class="action-row">
-      <button class="btn btn-secondary" onclick="showStep(1)">← Back</button>
-      <button class="btn btn-primary btn-lg" onclick="s2Next()">Add Your Options →</button>
+    <div class="act">
+      <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary btn-lg" onclick="s2Next()">Enter Values →</button>
     </div>
   </div>
 
-  <!-- STEP 3: Options -->
-  <div id="step3" class="hidden">
-    <div class="card">
-      <div class="card-title">What are your options?</div>
-      <div class="card-desc">Add at least 2 options you're weighing. Be concrete.</div>
-      <div id="optionsList"></div>
-      <button class="btn btn-ghost" style="width:100%;margin-top:0.5rem;" onclick="addOption()">+ Add option</button>
+  <!-- ══ STEP 3: Values per option ════════════════════ -->
+  <div id="s3" class="hidden">
+    <div class="card" style="margin-bottom:.75rem">
+      <div class="card-title">Rate each option on every factor</div>
+      <div class="card-desc">Work through each factor and fill in the value for every option. Be as honest as you can — the model is only as good as your inputs.</div>
     </div>
-
-    <div class="card" id="gutCard">
-      <div class="card-title">Gut check — what does your intuition say?</div>
-      <div class="card-desc">We'll tell you at the end whether the math agrees. Ignore the math for a second.</div>
-      <div class="gut-row" id="gutRow"></div>
-    </div>
-
-    <div class="action-row">
-      <button class="btn btn-secondary" onclick="showStep(2)">← Back</button>
-      <button class="btn btn-primary btn-lg" onclick="s3Next()">Define Scenarios →</button>
+    <div id="valuesContainer"></div>
+    <div class="act">
+      <button class="btn btn-secondary" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary btn-lg" onclick="s3Next()">See Results →</button>
     </div>
   </div>
 
-  <!-- STEP 4: Scenarios -->
-  <div id="step4" class="hidden">
-    <div class="card" style="margin-bottom:0.75rem;">
-      <div class="card-title">What could happen in each scenario?</div>
-      <div class="card-desc">Each option has 3 scenarios by default. Adjust probabilities and rate how each scenario plays out across the dimensions you care about. Probabilities for each option must sum to 100%.</div>
-    </div>
-    <div id="scenariosContainer"></div>
-    <div class="action-row">
-      <button class="btn btn-secondary" onclick="showStep(3)">← Back</button>
-      <button class="btn btn-primary btn-lg" onclick="s4Next()">Calculate →</button>
-    </div>
-  </div>
-
-  <!-- STEP 5: Results -->
-  <div id="step5" class="hidden">
+  <!-- ══ STEP 4: Results ══════════════════════════════ -->
+  <div id="s4" class="hidden">
     <div id="resultsContainer"></div>
-    <div style="text-align:center;margin-top:1rem;display:flex;justify-content:center;gap:0.75rem;">
-      <button class="btn btn-secondary" onclick="showStep(4)">← Adjust Scenarios</button>
-      <button class="btn btn-ghost" onclick="restart()">Start Over</button>
+    <div style="display:flex;justify-content:center;gap:.75rem;margin-top:1rem;flex-wrap:wrap">
+      <button class="btn btn-secondary" onclick="goStep(3)">← Adjust Values</button>
+      <button class="btn btn-secondary" onclick="goStep(2)">← Edit Factors</button>
+      <button class="btn btn-ghost"     onclick="restart()">Start Over</button>
     </div>
   </div>
 
 </div>
 
 <script>
-// ─── State ────────────────────────────────────────────────────────────────────
+// ── State ────────────────────────────────────────────────────────────────────
 const S = {
   decision: '',
-  hard: '',
-  urgency: 'month',
-  risk: 'neutral',
-  dimensions: [],
-  options: [],
-  gutChoice: null
+  opts: [],           // [{ name }]
+  factors: [],        /* [{
+    id, name, type ('score'|'number'|'prob'|'yesno'),
+    weight (1-5), higherBetter (bool)
+  }] */
+  vals: {},           // vals[optIdx][factorId] = raw value
+  gut: null,          // optIdx | -1
+  addWeight: 3,
+  addHigherBetter: true,
 };
 
-const PRESET_DIMS = [
-  { id: 'financial',   emoji: '💰', name: 'Financial' },
-  { id: 'career',      emoji: '🚀', name: 'Career & Growth' },
-  { id: 'happiness',   emoji: '😊', name: 'Happiness' },
-  { id: 'health',      emoji: '🏃', name: 'Health & Energy' },
-  { id: 'relations',   emoji: '❤️',  name: 'Relationships' },
-  { id: 'freedom',     emoji: '🗽', name: 'Freedom' },
-  { id: 'purpose',     emoji: '✨', name: 'Purpose & Values' },
-  { id: 'time',        emoji: '⏰', name: 'Time / Lifestyle' },
+let _uid = 0;
+const uid = () => 'f' + (++_uid);
+
+const QUICK = [
+  { name:'Financial impact',    type:'score',  weight:4, hi:true  },
+  { name:'Career growth',       type:'score',  weight:4, hi:true  },
+  { name:'Happiness',           type:'score',  weight:5, hi:true  },
+  { name:'Stress / difficulty', type:'score',  weight:3, hi:false },
+  { name:'Prestige',            type:'score',  weight:3, hi:true  },
+  { name:'Relationships',       type:'score',  weight:4, hi:true  },
+  { name:'Freedom / autonomy',  type:'score',  weight:3, hi:true  },
+  { name:'Location / vibe',     type:'score',  weight:3, hi:true  },
+  { name:'Salary / stipend',    type:'number', weight:4, hi:true  },
+  { name:'Cost / expense',      type:'number', weight:3, hi:false },
+  { name:'Commute (min)',       type:'number', weight:2, hi:false },
+  { name:'Probability of success', type:'prob', weight:4, hi:true },
+  { name:'Placement rate',      type:'prob',   weight:4, hi:true  },
+  { name:'Health insurance',    type:'yesno',  weight:3, hi:true  },
+  { name:'Remote-friendly',     type:'yesno',  weight:3, hi:true  },
 ];
 
-const SCENARIO_DEFAULTS = [
-  { label: 'Pessimistic', type: 'pessimistic', prob: 20, description: '' },
-  { label: 'Realistic',   type: 'realistic',   prob: 60, description: '' },
-  { label: 'Optimistic',  type: 'optimistic',  prob: 20, description: '' },
-];
-
-// ─── Radio helpers ─────────────────────────────────────────────────────────
-function setRadio(key, val, el) {
-  S[key] = val;
-  el.closest('.radio-group, .field, .card').querySelectorAll('.radio-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-}
-
-// ─── Step navigation ───────────────────────────────────────────────────────
-function showStep(n) {
-  [1,2,3,4,5].forEach(i => {
-    document.getElementById('step'+i).classList.toggle('hidden', i !== n);
-    const dot = document.getElementById('dot'+i);
-    dot.classList.remove('active','done');
-    if (i === n) dot.classList.add('active');
-    if (i < n)  dot.classList.add('done');
-    const lbl = document.getElementById('lbl'+i);
-    lbl.classList.toggle('active', i === n);
-    lbl.classList.toggle('done', i < n);
+// ── Progress ─────────────────────────────────────────────────────────────────
+function goStep(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById('s'+i).classList.toggle('hidden', i !== n);
+    const d = document.getElementById('pd'+i);
+    d.classList.remove('on','done');
+    if (i === n) d.classList.add('on');
+    if (i < n)  d.classList.add('done');
   });
-  [[1,2],[2,3],[3,4],[4,5]].forEach(([a,b]) => {
-    document.getElementById(`conn${a}${b}`).classList.toggle('done', n > a);
-  });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  [[1,2],[2,3],[3,4]].forEach(([a,b]) =>
+    document.getElementById(`pl${a}${b}`).classList.toggle('done', n > a));
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
-// ─── Step 1 ────────────────────────────────────────────────────────────────
-function s1Next() {
-  S.decision = document.getElementById('decisionName').value.trim();
-  if (!S.decision) { alert('Please describe your decision.'); return; }
-  S.hard = document.getElementById('decisionHard').value.trim();
-  renderDims();
-  showStep(2);
+// ── Step 1 ────────────────────────────────────────────────────────────────────
+function initS1() {
+  if (S.opts.length === 0) { S.opts = [{name:''},{name:''}]; }
+  renderOpts();
+  renderGut();
 }
+initS1();
 
-// ─── Step 2: Dimensions ────────────────────────────────────────────────────
-let customDimCount = 0;
-
-function initDims() {
-  if (S.dimensions.length === 0) {
-    S.dimensions = PRESET_DIMS.map(d => ({ ...d, selected: true, weight: 3 }));
-  }
+function addOpt() {
+  S.opts.push({name:''});
+  renderOpts(); renderGut();
 }
-
-function renderDims() {
-  initDims();
-  const grid = document.getElementById('dimsGrid');
-  grid.innerHTML = S.dimensions.map((d, i) => `
-    <div class="dim-chip ${d.selected ? 'selected' : ''}" onclick="toggleDim(${i})">
-      <span class="dim-emoji">${d.emoji}</span>
-      <span class="dim-name">${escHtml(d.name)}</span>
-    </div>
-  `).join('');
-  renderDimWeights();
+function removeOpt(i) {
+  if (S.opts.length <= 2) return alert('Need at least 2 options.');
+  S.opts.splice(i,1);
+  if (S.gut >= S.opts.length) S.gut = null;
+  renderOpts(); renderGut();
 }
-
-function toggleDim(i) {
-  S.dimensions[i].selected = !S.dimensions[i].selected;
-  renderDims();
-}
-
-function addCustomDim() {
-  const val = document.getElementById('customDimInput').value.trim();
-  if (!val) return;
-  customDimCount++;
-  S.dimensions.push({ id: 'custom_'+customDimCount, emoji: '📌', name: val, selected: true, weight: 3 });
-  document.getElementById('customDimInput').value = '';
-  renderDims();
-}
-
-function renderDimWeights() {
-  const selected = S.dimensions.filter(d => d.selected);
-  const card = document.getElementById('dimWeightsCard');
-  if (selected.length === 0) { card.classList.add('hidden'); return; }
-  card.classList.remove('hidden');
-  const list = document.getElementById('dimWeightsList');
-  list.innerHTML = selected.map(d => `
-    <div class="dim-weight-row">
-      <div class="dim-weight-header">
-        <div class="dim-weight-label"><span>${d.emoji}</span> ${escHtml(d.name)}</div>
-        <div class="stars" id="stars-${d.id}">${[1,2,3,4,5].map(n => `
-          <span class="star ${n <= d.weight ? 'on' : ''}" onclick="setWeight('${d.id}',${n})">★</span>
-        `).join('')}</div>
-      </div>
-      <div style="font-size:0.78rem;color:var(--muted);">${weightLabel(d.weight)}</div>
-    </div>
-  `).join('');
-}
-
-function weightLabel(w) {
-  return ['','Marginal weight','Some weight','Moderate weight','High weight','Critical weight'][w] || '';
-}
-
-function setWeight(id, w) {
-  const d = S.dimensions.find(x => x.id === id);
-  if (d) { d.weight = w; renderDimWeights(); }
-}
-
-function s2Next() {
-  if (!S.dimensions.some(d => d.selected)) { alert('Please select at least one dimension.'); return; }
-  if (S.options.length === 0) { S.options = [newOption(''), newOption('')]; }
-  renderOptions();
-  renderGutButtons();
-  showStep(3);
-}
-
-// ─── Step 3: Options ───────────────────────────────────────────────────────
-function newOption(name) {
-  return {
-    name,
-    scenarios: SCENARIO_DEFAULTS.map(sd => ({
-      label: sd.label, type: sd.type, prob: sd.prob, description: '',
-      ratings: {}
-    }))
-  };
-}
-
-function addOption() {
-  S.options.push(newOption(''));
-  renderOptions();
-  renderGutButtons();
-}
-
-function removeOption(i) {
-  if (S.options.length <= 2) { alert('Need at least 2 options.'); return; }
-  S.options.splice(i, 1);
-  if (S.gutChoice >= S.options.length) S.gutChoice = null;
-  renderOptions();
-  renderGutButtons();
-}
-
-function renderOptions() {
-  const el = document.getElementById('optionsList');
+function renderOpts() {
   const letters = 'ABCDEFGHIJ';
-  el.innerHTML = S.options.map((opt, i) => `
-    <div class="option-pill">
-      <div class="option-letter">${letters[i]}</div>
-      <input class="opt-name" type="text" value="${escHtml(opt.name)}" placeholder="Option ${letters[i]} — describe it briefly" style="flex:1;" />
-      ${S.options.length > 2 ? `<button class="btn btn-danger" onclick="removeOption(${i})">✕</button>` : ''}
+  document.getElementById('optList').innerHTML = S.opts.map((o,i) => `
+    <div class="opt-pill">
+      <div class="opt-letter">${letters[i]}</div>
+      <input type="text" class="opt-inp" value="${h(o.name)}" placeholder="Option ${letters[i]}…"
+        oninput="S.opts[${i}].name=this.value;renderGut()" style="flex:1" />
+      ${S.opts.length > 2 ? `<button class="btn-icon" onclick="removeOpt(${i})">✕</button>` : ''}
     </div>
   `).join('');
 }
-
-function renderGutButtons() {
+function renderGut() {
   const letters = 'ABCDEFGHIJ';
   document.getElementById('gutRow').innerHTML = [
-    ...S.options.map((opt, i) => `
-      <button class="gut-btn ${S.gutChoice === i ? 'active' : ''}" onclick="setGut(${i},this)">
-        ${letters[i]}${opt.name ? ': ' + escHtml(opt.name.substring(0,22)) : ''}
-      </button>
-    `),
-    `<button class="gut-btn ${S.gutChoice === -1 ? 'active' : ''}" onclick="setGut(-1,this)">No gut feeling</button>`
+    ...S.opts.map((o,i) => `
+      <button class="chip ${S.gut===i?'on':''}" onclick="S.gut=${i};renderGut()">
+        ${letters[i]}${o.name ? ': '+h(o.name.slice(0,24)) : ''}
+      </button>`),
+    `<button class="chip ${S.gut===-1?'on':''}" onclick="S.gut=-1;renderGut()">Not sure</button>`
   ].join('');
 }
 
-function setGut(i, el) {
-  S.gutChoice = i;
-  document.querySelectorAll('.gut-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-}
-
-function syncOptionNames() {
-  document.querySelectorAll('.opt-name').forEach((inp, i) => {
-    if (S.options[i]) S.options[i].name = inp.value.trim() || `Option ${String.fromCharCode(65+i)}`;
+function s1Next() {
+  S.decision = document.getElementById('decName').value.trim();
+  if (!S.decision) return alert('Please describe your decision.');
+  // sync option names
+  document.querySelectorAll('.opt-inp').forEach((el,i) => {
+    S.opts[i].name = el.value.trim() || `Option ${String.fromCharCode(65+i)}`;
   });
+  if (S.opts.some(o => !o.name)) S.opts.forEach((o,i) => { if (!o.name) o.name = `Option ${String.fromCharCode(65+i)}`; });
+  // Init quick chips
+  renderQuickChips();
+  // Init add-stars
+  renderAddStars(S.addWeight);
+  goStep(2);
 }
 
-function s3Next() {
-  syncOptionNames();
-  const letters = 'ABCDEFGHIJ';
-  for (let i = 0; i < S.options.length; i++) {
-    if (!S.options[i].name) S.options[i].name = `Option ${letters[i]}`;
-  }
-  renderScenarios();
-  showStep(4);
-}
-
-// ─── Step 4: Scenarios ─────────────────────────────────────────────────────
-function addScenario(oi) {
-  syncScenarios();
-  S.options[oi].scenarios.push({ label: 'Custom', type: 'custom', prob: 0, description: '', ratings: {} });
-  renderScenarios();
-}
-
-function removeScenario(oi, si) {
-  if (S.options[oi].scenarios.length <= 1) { alert('Need at least one scenario.'); return; }
-  syncScenarios();
-  S.options[oi].scenarios.splice(si, 1);
-  renderScenarios();
-}
-
-function syncScenarios() {
-  S.options.forEach((opt, oi) => {
-    opt.scenarios.forEach((sc, si) => {
-      const descEl = document.getElementById(`sc-desc-${oi}-${si}`);
-      const probEl = document.getElementById(`sc-prob-${oi}-${si}`);
-      if (descEl) sc.description = descEl.value;
-      if (probEl) sc.prob = +probEl.value;
-      S.dimensions.filter(d => d.selected).forEach(d => {
-        const rEl = document.getElementById(`sc-r-${oi}-${si}-${d.id}`);
-        if (rEl) sc.ratings[d.id] = +rEl.value;
-      });
-    });
-  });
-}
-
-function updateScProb(oi, si, val) {
-  S.options[oi].scenarios[si].prob = +val;
-  document.getElementById(`sc-prob-val-${oi}-${si}`).textContent = val + '%';
-  document.getElementById(`sc-prob-bar-${oi}-${si}`).style.width = val + '%';
-  updateProbSum(oi);
-}
-
-function updateRating(oi, si, did, val) {
-  const v = +val;
-  S.options[oi].scenarios[si].ratings[did] = v;
-  const el = document.getElementById(`sc-rv-${oi}-${si}-${did}`);
-  el.textContent = v > 0 ? '+' + v : v;
-  el.className = 'dim-rating-val ' + (v > 0 ? 'rating-positive' : v < 0 ? 'rating-negative' : 'rating-neutral');
-  const range = document.getElementById(`sc-r-${oi}-${si}-${did}`);
-  const pct = ((v + 5) / 10) * 100;
-  range.style.background = `linear-gradient(to right, var(--bad) 0%, var(--border) 50%, var(--good) 100%)`;
-}
-
-function updateProbSum(oi) {
-  const total = S.options[oi].scenarios.reduce((s, sc) => s + sc.prob, 0);
-  const el = document.getElementById(`prob-sum-${oi}`);
-  if (!el) return;
-  const ok = Math.abs(total - 100) < 1;
-  el.textContent = `${total}%${ok ? ' ✓' : ' — must equal 100%'}`;
-  el.className = 'prob-sum-badge ' + (ok ? 'prob-sum-ok' : total > 100 ? 'prob-sum-over' : 'prob-sum-warn');
-}
-
-function renderScenarios() {
-  const dims = S.dimensions.filter(d => d.selected);
-  const letters = 'ABCDEFGHIJ';
-  const container = document.getElementById('scenariosContainer');
-  container.innerHTML = S.options.map((opt, oi) => `
-    <div class="option-block">
-      <div class="option-block-header">
-        <div class="option-block-name">
-          <div class="option-letter">${letters[oi]}</div>
-          ${escHtml(opt.name)}
-        </div>
-        <span id="prob-sum-${oi}" class="prob-sum-badge prob-sum-warn">—</span>
-      </div>
-      <div class="option-block-body">
-        ${opt.scenarios.map((sc, si) => `
-          <div class="scenario-card">
-            <div class="scenario-header">
-              <div class="scenario-label">
-                <span class="scenario-badge badge-${sc.type}">${sc.label}</span>
-              </div>
-              ${opt.scenarios.length > 1 ? `<button class="btn btn-danger" onclick="removeScenario(${oi},${si})">✕</button>` : ''}
-            </div>
-
-            <div class="prob-row">
-              <span class="prob-label">Probability</span>
-              <input type="range" min="0" max="100" value="${sc.prob}"
-                id="sc-prob-${oi}-${si}"
-                oninput="updateScProb(${oi},${si},this.value)"
-                style="flex:1;" />
-              <span class="prob-fill" style="display:none"><div class="prob-fill-inner" id="sc-prob-bar-${oi}-${si}" style="width:${sc.prob}%"></div></span>
-              <span class="slider-val" id="sc-prob-val-${oi}-${si}">${sc.prob}%</span>
-            </div>
-
-            <div class="field" style="margin-bottom:0.75rem;">
-              <label>What happens in this scenario?</label>
-              <input type="text" id="sc-desc-${oi}-${si}" value="${escHtml(sc.description)}" placeholder="Briefly describe this outcome..." />
-            </div>
-
-            <div style="font-size:0.78rem;color:var(--muted2);margin-bottom:0.5rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Rate this scenario</div>
-            <div class="dim-ratings">
-              ${dims.map(d => {
-                const v = sc.ratings[d.id] !== undefined ? sc.ratings[d.id] : 0;
-                const vDisplay = v > 0 ? '+' + v : v;
-                const vClass = v > 0 ? 'rating-positive' : v < 0 ? 'rating-negative' : 'rating-neutral';
-                return `
-                  <div class="dim-rating-row">
-                    <div class="dim-rating-name">${d.emoji} ${escHtml(d.name)}</div>
-                    <input type="range" min="-5" max="5" value="${v}"
-                      id="sc-r-${oi}-${si}-${d.id}"
-                      oninput="updateRating(${oi},${si},'${d.id}',this.value)"
-                      style="background:linear-gradient(to right, var(--bad) 0%, var(--border) 50%, var(--good) 100%)" />
-                    <div class="dim-rating-val ${vClass}" id="sc-rv-${oi}-${si}-${d.id}">${vDisplay}</div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        `).join('')}
-        <button class="btn btn-ghost" style="width:100%" onclick="addScenario(${oi})">+ Add scenario</button>
-      </div>
-    </div>
+// ── Step 2: Factors ───────────────────────────────────────────────────────────
+function renderQuickChips() {
+  const added = new Set(S.factors.map(f => f.name.toLowerCase()));
+  document.getElementById('quickChips').innerHTML = QUICK.filter(q => !added.has(q.name.toLowerCase())).map(q => `
+    <button class="quick-add-chip" onclick="quickAdd(${JSON.stringify(q).replace(/"/g,'&quot;')})">${q.name}</button>
   `).join('');
-
-  S.options.forEach((_, oi) => updateProbSum(oi));
 }
 
-function s4Next() {
-  syncScenarios();
-  let valid = true;
-  S.options.forEach(opt => {
-    const total = opt.scenarios.reduce((s, sc) => s + sc.prob, 0);
-    if (Math.abs(total - 100) > 1) {
-      valid = false;
-      alert(`Probabilities for "${opt.name}" sum to ${total}%, not 100%. Please adjust.`);
-    }
-  });
-  if (!valid) return;
-  renderResults();
-  showStep(5);
+function quickAdd(q) {
+  S.factors.push({ id:uid(), name:q.name, type:q.type, weight:q.weight, higherBetter:q.hi });
+  renderFactorList();
+  renderQuickChips();
 }
 
-// ─── Calculation ───────────────────────────────────────────────────────────
-function scenarioUtil(sc, dims) {
-  const totalW = dims.reduce((s, d) => s + d.weight, 0);
-  if (totalW === 0) return 0;
-  return dims.reduce((s, d) => s + (sc.ratings[d.id] || 0) * d.weight, 0) / totalW;
-  // result: -5 to +5
+function renderAddStars(w) {
+  S.addWeight = w;
+  document.getElementById('addStars').innerHTML = [1,2,3,4,5].map(n => `
+    <span class="star ${n<=w?'on':''}" onclick="renderAddStars(${n})">${n<=w?'★':'☆'}</span>
+  `).join('');
 }
 
-function optionStats(opt, dims) {
-  const ev = opt.scenarios.reduce((s, sc) => {
-    let u = scenarioUtil(sc, dims);
-    if (S.risk === 'conservative' && u < 0) u *= 1.6;
-    if (S.risk === 'bold' && u > 0) u *= 1.3;
-    return s + (sc.prob / 100) * u;
-  }, 0);
-  const variance = opt.scenarios.reduce((s, sc) => {
-    let u = scenarioUtil(sc, dims);
-    if (S.risk === 'conservative' && u < 0) u *= 1.6;
-    if (S.risk === 'bold' && u > 0) u *= 1.3;
-    return s + (sc.prob / 100) * Math.pow(u - ev, 2);
-  }, 0);
-  const sd = Math.sqrt(variance);
-  const worstU = Math.min(...opt.scenarios.map(sc => scenarioUtil(sc, dims)));
-  const bestU  = Math.max(...opt.scenarios.map(sc => scenarioUtil(sc, dims)));
-  return { ev, sd, worstU, bestU };
+document.getElementById('fType').addEventListener('change', function() {
+  document.getElementById('dirToggleWrap').classList.toggle('hidden', this.value !== 'number');
+});
+
+function setDir(hi) {
+  S.addHigherBetter = hi;
+  document.getElementById('dirHigh').classList.toggle('on', hi);
+  document.getElementById('dirLow').classList.toggle('on', !hi);
 }
 
-function dimEV(opt, dims, targetDim) {
-  // EV contribution from one dimension
-  return opt.scenarios.reduce((s, sc) => {
-    const val = (sc.ratings[targetDim.id] || 0) * targetDim.weight / targetDim.weight;
-    return s + (sc.prob / 100) * val;
-  }, 0);
+function addFactor() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) return alert('Enter a factor name.');
+  const type = document.getElementById('fType').value;
+  S.factors.push({ id:uid(), name, type, weight:S.addWeight, higherBetter: type==='number' ? S.addHigherBetter : true });
+  document.getElementById('fName').value = '';
+  renderFactorList();
+  renderQuickChips();
 }
 
-// ─── Results ───────────────────────────────────────────────────────────────
-function renderResults() {
-  const dims = S.dimensions.filter(d => d.selected);
-  const results = S.options.map(opt => ({ opt, ...optionStats(opt, dims) }));
-  results.sort((a, b) => b.ev - a.ev);
+function removeFactor(id) {
+  S.factors = S.factors.filter(f => f.id !== id);
+  renderFactorList();
+  renderQuickChips();
+}
 
-  const winner = results[0];
-  const maxAbsEV = Math.max(...results.map(r => Math.abs(r.ev)), 0.1);
+function setFactorWeight(id, w) {
+  const f = S.factors.find(x=>x.id===id);
+  if (f) { f.weight = w; renderFactorList(); }
+}
 
-  // Gut check
-  let gutHtml = '';
-  if (S.gutChoice !== null && S.gutChoice >= 0) {
-    const gutOpt = S.options[S.gutChoice];
-    const gutResult = results.find(r => r.opt === gutOpt);
-    const isWinner = gutResult === winner;
-    gutHtml = `<div class="gut-note ${isWinner ? 'gut-agree' : 'gut-disagree'}">
-      ${isWinner
-        ? `✓ Your gut (${escHtml(gutOpt.name)}) agrees with the math.`
-        : `⚠ Your gut favors <strong>${escHtml(gutOpt.name)}</strong>, but the math says <strong>${escHtml(winner.opt.name)}</strong>. Worth reflecting on why.`}
-    </div>`;
+const TYPE_INFO = {
+  score:  { label:'Score',       cls:'tb-score',  desc:'Rate 1–10' },
+  number: { label:'Number',      cls:'tb-number', desc:'Actual value' },
+  prob:   { label:'Probability', cls:'tb-prob',   desc:'0–100%' },
+  yesno:  { label:'Yes / No',    cls:'tb-yesno',  desc:'Binary' },
+};
+
+function renderFactorList() {
+  const el = document.getElementById('factorList');
+  if (S.factors.length === 0) {
+    el.innerHTML = `<div style="text-align:center;color:var(--muted);font-size:.85rem;padding:1rem 0">No factors yet — quick-add above or fill the form below.</div>`;
+    return;
   }
-
-  // Sensitivity
-  const sensitivityItems = [];
-  if (results.length >= 2) {
-    const second = results[1];
-    const gap = winner.ev - second.ev;
-    // Find which scenario of the winner matters most (highest prob * util)
-    const winnerBestSc = [...winner.opt.scenarios].sort((a,b) => scenarioUtil(b,dims) - scenarioUtil(a,dims))[0];
-    const winnerWorstSc = [...winner.opt.scenarios].sort((a,b) => scenarioUtil(a,dims) - scenarioUtil(b,dims))[0];
-    sensitivityItems.push({
-      icon: '📏',
-      text: `The EV gap between <strong>${escHtml(winner.opt.name)}</strong> and <strong>${escHtml(second.opt.name)}</strong> is <strong>${gap.toFixed(2)} points</strong> — ${gap < 0.5 ? 'very close. Small changes to your ratings could flip the recommendation.' : gap < 1.5 ? 'moderate. Review your key assumptions.' : 'substantial. The recommendation is robust to minor adjustments.'}`
-    });
-    if (winnerWorstSc) {
-      sensitivityItems.push({
-        icon: '⚠️',
-        text: `Your worst-case scenario for <strong>${escHtml(winner.opt.name)}</strong> is rated <strong>${scenarioUtil(winnerWorstSc, dims).toFixed(1)}</strong> and has a <strong>${winnerWorstSc.prob}%</strong> probability. ${winnerWorstSc.prob >= 30 ? 'This is a significant downside risk.' : 'Low probability, but worth planning for.'}`
-      });
-    }
-    // Which dimension drives the most divergence?
-    let maxDivDim = null, maxDiv = 0;
-    dims.forEach(d => {
-      const evA = dimEV(winner.opt, dims, d);
-      const evB = dimEV(second.opt, dims, d);
-      const div = Math.abs(evA - evB) * d.weight;
-      if (div > maxDiv) { maxDiv = div; maxDivDim = d; }
-    });
-    if (maxDivDim) {
-      sensitivityItems.push({
-        icon: '🔑',
-        text: `The biggest driver of the gap is <strong>${maxDivDim.emoji} ${escHtml(maxDivDim.name)}</strong>. If you re-rate this dimension, the recommendation could change.`
-      });
-    }
-    if (winner.sd > second.sd + 0.5) {
-      sensitivityItems.push({ icon: '📉', text: `<strong>${escHtml(winner.opt.name)}</strong> has higher variance (SD ${winner.sd.toFixed(2)} vs ${second.sd.toFixed(2)}). It has more upside but also more downside.` });
-    }
-  }
-
-  // Dim breakdown per option (for top 2 options)
-  function dimBreakdownHtml(opt) {
-    const maxW = Math.max(...dims.map(d => d.weight * 5), 0.1);
-    return dims.map(d => {
-      const ev = dimEV(opt, dims, d);
-      const barPct = Math.min(Math.abs(ev) / 5 * 100, 100);
-      const barColor = ev > 0 ? 'var(--good)' : ev < 0 ? 'var(--bad)' : 'var(--border)';
-      const valClass = ev > 0 ? 'rating-positive' : ev < 0 ? 'rating-negative' : 'rating-neutral';
-      return `
-        <div class="dim-breakdown-row">
-          <div class="dim-br-label">${d.emoji} ${escHtml(d.name)}</div>
-          <div class="dim-br-bar-wrap">
-            <div class="dim-br-bar" style="width:${barPct}%;background:${barColor}"></div>
-          </div>
-          <div class="dim-br-val ${valClass}">${ev > 0 ? '+' : ''}${ev.toFixed(1)}</div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function scenarioBreakdownHtml(opt) {
-    return opt.scenarios.map(sc => {
-      const u = scenarioUtil(sc, dims);
-      let uAdj = u;
-      if (S.risk === 'conservative' && u < 0) uAdj *= 1.6;
-      if (S.risk === 'bold' && u > 0) uAdj *= 1.3;
-      const contrib = (sc.prob / 100) * uAdj;
-      const cClass = contrib > 0 ? 'rating-positive' : contrib < 0 ? 'rating-negative' : 'rating-neutral';
-      return `
-        <div class="breakdown-row">
-          <span class="bl">${escHtml(sc.label)}${sc.description ? ': ' + escHtml(sc.description.substring(0,40)) : ''}</span>
-          <span class="bc">${sc.prob}% × ${uAdj.toFixed(2)}</span>
-          <span class="bv ${cClass}">${contrib > 0 ? '+' : ''}${contrib.toFixed(3)}</span>
-        </div>
-      `;
-    }).join('') + `
-      <div class="breakdown-row">
-        <span class="bl">Expected Utility</span><span class="bc"></span>
-        <span class="bv">${results.find(r=>r.opt===opt)?.ev.toFixed(3)}</span>
-      </div>`;
-  }
-
-  const riskNote = { conservative: 'Risk-adjusted (conservative): downside scenarios weighted 1.6×', neutral: 'Pure expected utility', bold: 'Risk-adjusted (bold): upside scenarios weighted 1.3×' }[S.risk];
-
-  let html = `
-    <div class="winner-banner">
-      <div class="label">Recommended Choice</div>
-      <div class="winner-name">${escHtml(winner.opt.name)}</div>
-      <div class="winner-sub">Expected utility: ${winner.ev > 0 ? '+' : ''}${winner.ev.toFixed(2)} · ${riskNote}</div>
-      ${gutHtml}
-    </div>
-  `;
-
-  html += `<div class="sensitivity-box">
-    <div class="sensitivity-title">📊 Key Insights</div>
-    ${sensitivityItems.map(s => `
-      <div class="sensitivity-item">
-        <span class="sensitivity-icon">${s.icon}</span>
-        <span class="sensitivity-text">${s.text}</span>
-      </div>
-    `).join('')}
-  </div>`;
-
-  results.forEach(({ opt, ev, sd, worstU, bestU }, rank) => {
-    const isWinner = rank === 0;
-    const barPct = Math.min((Math.abs(ev) / maxAbsEV) * 100, 100);
-    const barColor = ev > 0 ? 'var(--good)' : ev < 0 ? 'var(--bad)' : 'var(--muted)';
-    const evClass = ev > 0 ? 'ev-pos' : ev < 0 ? 'ev-neg' : 'ev-zero';
-    const letters = 'ABCDEFGHIJ';
-    const idx = S.options.indexOf(opt);
-
-    html += `
-      <div class="result-option-card ${isWinner ? 'winner' : ''}">
-        <div class="result-header">
-          <div class="result-name">
-            <div class="option-letter">${letters[idx]}</div>
-            ${escHtml(opt.name)}
-            ${isWinner ? '<span class="winner-star">★</span>' : ''}
-          </div>
-          <div class="result-ev ${evClass}">EU ${ev > 0 ? '+' : ''}${ev.toFixed(2)}</div>
-        </div>
-        <div class="result-body">
-          <div class="ev-bar-wrap">
-            <div class="ev-bar" style="width:${barPct}%;background:${barColor}"></div>
-          </div>
-          <div class="stats-row">
-            <div class="stat-box">
-              <div class="stat-label">Exp. Utility</div>
-              <div class="stat-val ${evClass}">${ev > 0 ? '+' : ''}${ev.toFixed(2)}</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-label">Std. Deviation</div>
-              <div class="stat-val" style="color:var(--warn)">±${sd.toFixed(2)}</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-label">Worst / Best</div>
-              <div class="stat-val" style="font-size:0.95rem;">
-                <span style="color:var(--bad)">${worstU.toFixed(1)}</span>
-                <span style="color:var(--muted)"> / </span>
-                <span style="color:var(--good)">${bestU > 0 ? '+' : ''}${bestU.toFixed(1)}</span>
-              </div>
+  el.innerHTML = S.factors.map(f => {
+    const ti = TYPE_INFO[f.type];
+    const stars = [1,2,3,4,5].map(n =>
+      `<span class="star ${n<=f.weight?'on':''}" onclick="setFactorWeight('${f.id}',${n})">${n<=f.weight?'★':'☆'}</span>`).join('');
+    return `
+      <div class="factor-card">
+        <div class="factor-header">
+          <div style="flex:1">
+            <div class="factor-name-big">${h(f.name)}</div>
+            <div class="factor-meta">
+              <span class="type-badge ${ti.cls}">${ti.label}</span>
+              ${f.type === 'number' ? `<span style="font-size:.75rem;color:var(--muted)">${f.higherBetter ? '↑ higher better' : '↓ lower better'}</span>` : ''}
+              <div class="stars">${stars}</div>
             </div>
           </div>
-          <div class="divider"></div>
-          <div style="font-size:0.78rem;color:var(--muted2);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.75rem;">Dimension Breakdown</div>
-          <div class="dim-breakdown">${dimBreakdownHtml(opt)}</div>
-          <details>
-            <summary>Scenario breakdown</summary>
-            <div class="breakdown-table">${scenarioBreakdownHtml(opt)}</div>
-          </details>
+          <button class="btn-icon" onclick="removeFactor('${f.id}')">✕</button>
         </div>
       </div>
     `;
+  }).join('');
+}
+
+function s2Next() {
+  if (S.factors.length === 0) return alert('Add at least one factor.');
+  // Init vals
+  S.opts.forEach((_, oi) => {
+    if (!S.vals[oi]) S.vals[oi] = {};
+    S.factors.forEach(f => {
+      if (S.vals[oi][f.id] === undefined) {
+        S.vals[oi][f.id] = f.type==='yesno' ? 1 : f.type==='score' ? 5 : f.type==='prob' ? 50 : 0;
+      }
+    });
   });
+  renderValues();
+  goStep(3);
+}
+
+// ── Step 3: Values ────────────────────────────────────────────────────────────
+function getVal(oi,fid) { return S.vals[oi]?.[fid] ?? 0; }
+function setVal(oi,fid,v) { if (!S.vals[oi]) S.vals[oi]={}; S.vals[oi][fid]=v; }
+
+function renderValues() {
+  document.getElementById('valuesContainer').innerHTML = S.factors.map(f => {
+    const ti = TYPE_INFO[f.type];
+    const optRows = S.opts.map((o,oi) => {
+      const v = getVal(oi, f.id);
+      let input = '';
+      if (f.type === 'score') {
+        input = `
+          <div style="flex:1">
+            <div class="sl-wrap">
+              <input type="range" min="1" max="10" value="${v}"
+                id="vr-${oi}-${f.id}"
+                oninput="setVal(${oi},'${f.id}',+this.value);document.getElementById('vv-${oi}-${f.id}').textContent=this.value" />
+              <span class="sl-val" id="vv-${oi}-${f.id}">${v}</span>
+            </div>
+            <div class="sl-ends"><span>1 — poor</span><span>10 — excellent</span></div>
+          </div>`;
+      } else if (f.type === 'prob') {
+        input = `
+          <div style="flex:1">
+            <div class="sl-wrap">
+              <input type="range" min="0" max="100" value="${v}"
+                id="vr-${oi}-${f.id}"
+                oninput="setVal(${oi},'${f.id}',+this.value);document.getElementById('vv-${oi}-${f.id}').textContent=this.value+'%'" />
+              <span class="sl-val" id="vv-${oi}-${f.id}">${v}%</span>
+            </div>
+            <div class="sl-ends"><span>0%</span><span>100%</span></div>
+          </div>`;
+      } else if (f.type === 'number') {
+        input = `
+          <div style="flex:1">
+            <input type="number" value="${v}" placeholder="Enter value…"
+              id="vr-${oi}-${f.id}"
+              oninput="setVal(${oi},'${f.id}',+this.value||0)"
+              style="max-width:200px" />
+          </div>`;
+      } else { // yesno
+        const isYes = v === 1;
+        input = `
+          <div class="yn-toggle">
+            <button class="yn-btn yes ${isYes?'on':''}" id="yn-yes-${oi}-${f.id}"
+              onclick="setVal(${oi},'${f.id}',1);document.getElementById('yn-yes-${oi}-${f.id}').classList.add('on');document.getElementById('yn-no-${oi}-${f.id}').classList.remove('on')">
+              Yes
+            </button>
+            <button class="yn-btn no ${!isYes?'on':''}" id="yn-no-${oi}-${f.id}"
+              onclick="setVal(${oi},'${f.id}',0);document.getElementById('yn-no-${oi}-${f.id}').classList.add('on');document.getElementById('yn-yes-${oi}-${f.id}').classList.remove('on')">
+              No
+            </button>
+          </div>`;
+      }
+      return `
+        <div class="vfb-opt-row">
+          <div class="opt-label">${h(o.name)}</div>
+          ${input}
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="value-factor-block">
+        <div class="vfb-header">
+          <div class="vfb-title">
+            <span>${h(f.name)}</span>
+            <span class="type-badge ${ti.cls}">${ti.label}</span>
+            ${f.type==='number' ? `<span style="font-size:.72rem;color:var(--muted)">${f.higherBetter?'↑ higher better':'↓ lower better'}</span>` : ''}
+          </div>
+          <div class="stars">${[1,2,3,4,5].filter(n=>n<=f.weight).map(()=>'★').join('')}</div>
+        </div>
+        <div class="vfb-body">${optRows}</div>
+      </div>`;
+  }).join('');
+}
+
+function s3Next() {
+  // Sync number inputs
+  S.factors.forEach(f => {
+    if (f.type === 'number') {
+      S.opts.forEach((_, oi) => {
+        const el = document.getElementById(`vr-${oi}-${f.id}`);
+        if (el) setVal(oi, f.id, +el.value || 0);
+      });
+    }
+  });
+  renderResults();
+  goStep(4);
+}
+
+// ── Calculation ───────────────────────────────────────────────────────────────
+function normalize(vals, higherBetter) {
+  const nums = vals.map(Number);
+  const mn = Math.min(...nums), mx = Math.max(...nums);
+  if (mx === mn) return nums.map(() => 0.5);
+  return nums.map(v => higherBetter ? (v - mn)/(mx - mn) : (mx - v)/(mx - mn));
+}
+
+function calcScores() {
+  // For each factor, compute normalized utility per option
+  const perFactor = S.factors.map(f => {
+    const rawVals = S.opts.map((_, oi) => getVal(oi, f.id));
+    let normVals;
+    if (f.type === 'score') {
+      normVals = rawVals.map(v => (v - 1) / 9); // 1-10 → 0-1
+    } else if (f.type === 'prob') {
+      normVals = rawVals.map(v => v / 100);      // 0-100 → 0-1
+    } else if (f.type === 'yesno') {
+      normVals = rawVals.map(v => v ? 1 : 0);
+    } else { // number — normalize across options
+      normVals = normalize(rawVals, f.higherBetter);
+    }
+    return { f, normVals };
+  });
+
+  const totalWeight = S.factors.reduce((s, f) => s + f.weight, 0);
+  const scores = S.opts.map((_, oi) => {
+    const weighted = perFactor.reduce((s, {f, normVals}) => s + normVals[oi] * f.weight, 0);
+    return (weighted / totalWeight) * 10; // scale 0-10
+  });
+
+  return { scores, perFactor, totalWeight };
+}
+
+// ── Results ───────────────────────────────────────────────────────────────────
+function renderResults() {
+  const { scores, perFactor } = calcScores();
+  const ranked = S.opts.map((o,i) => ({ o, i, score: scores[i] })).sort((a,b) => b.score - a.score);
+  const winner = ranked[0];
+  const maxScore = Math.max(...scores, 0.01);
+
+  // Gut check
+  let gutHtml = '';
+  if (S.gut !== null && S.gut >= 0) {
+    const gutOpt = S.opts[S.gut];
+    const gutScore = scores[S.gut];
+    const isWinner = S.gut === winner.i;
+    gutHtml = `<div class="gut-line ${isWinner ? 'gut-ok' : 'gut-warn'}">
+      ${isWinner
+        ? `✓ Your gut (${h(gutOpt.name)}) agrees with the expected utility score.`
+        : `⚠ Your gut favors <strong>${h(gutOpt.name)}</strong> (score ${gutScore.toFixed(1)}), but the model recommends <strong>${h(winner.o.name)}</strong> (${winner.score.toFixed(1)}). Worth asking: is there a factor you haven't added?`
+      }
+    </div>`;
+  }
+
+  // Key insights
+  const insights = [];
+
+  if (ranked.length >= 2) {
+    const gap = winner.score - ranked[1].score;
+    insights.push({
+      icon: '📏',
+      text: `The gap between <strong>${h(winner.o.name)}</strong> and <strong>${h(ranked[1].o.name)}</strong> is <strong>${gap.toFixed(1)} points</strong> out of 10 — ${gap < 1 ? 'very close. Small changes in your ratings could flip the recommendation.' : gap < 2.5 ? 'moderate. Review your most important factors.' : 'substantial. The recommendation is robust.'}`
+    });
+
+    // Which factor most differentiates winner from second?
+    let maxDiffFactor = null, maxDiff = -1;
+    perFactor.forEach(({ f, normVals }) => {
+      const diff = Math.abs(normVals[winner.i] - normVals[ranked[1].i]) * f.weight;
+      if (diff > maxDiff) { maxDiff = diff; maxDiffFactor = f; }
+    });
+    if (maxDiffFactor) {
+      const wVal = getVal(winner.i, maxDiffFactor.id);
+      const rVal = getVal(ranked[1].i, maxDiffFactor.id);
+      insights.push({
+        icon: '🔑',
+        text: `The biggest differentiating factor is <strong>${h(maxDiffFactor.name)}</strong> — ${h(winner.o.name)} rates ${fmtVal(wVal, maxDiffFactor)} vs ${fmtVal(rVal, maxDiffFactor)} for ${h(ranked[1].o.name)}.`
+      });
+    }
+
+    // Any factor where runner-up wins?
+    const runnerUpWins = perFactor.filter(({normVals}) => normVals[ranked[1].i] > normVals[winner.i] + 0.1);
+    if (runnerUpWins.length > 0) {
+      insights.push({
+        icon: '⚖️',
+        text: `<strong>${h(ranked[1].o.name)}</strong> outperforms on: ${runnerUpWins.map(({f}) => `<strong>${h(f.name)}</strong>`).join(', ')}. If these matter more to you, reconsider their weights.`
+      });
+    }
+
+    // Factor with all same scores
+    const tieFactors = perFactor.filter(({normVals}) =>
+      normVals.every(v => Math.abs(v - normVals[0]) < 0.05)
+    );
+    if (tieFactors.length > 0 && tieFactors.length <= 3) {
+      insights.push({
+        icon: '🟰',
+        text: `All options score similarly on: ${tieFactors.map(({f}) => `<strong>${h(f.name)}</strong>`).join(', ')}. These factors don't currently influence the ranking.`
+      });
+    }
+  }
+
+  // Factor bar contribution for one option
+  function factorBars(oi) {
+    return perFactor.map(({ f, normVals }) => {
+      const pct = normVals[oi] * 100;
+      const color = pct >= 65 ? 'var(--good)' : pct >= 35 ? 'var(--info)' : 'var(--bad)';
+      const valClass = pct >= 65 ? 'v-hi' : pct >= 35 ? 'v-md' : 'v-lo';
+      return `
+        <div class="factor-bar-row">
+          <div class="fbar-label" title="${h(f.name)}">${h(f.name)}</div>
+          <div class="fbar-track">
+            <div class="fbar-fill" style="width:${pct}%;background:${color}"></div>
+          </div>
+          <div class="fbar-val ${valClass}">${fmtVal(getVal(oi,f.id),f)}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // Full breakdown table
+  function scoreTable(oi, score) {
+    const rows = perFactor.map(({ f, normVals }) => {
+      const contrib = (normVals[oi] * f.weight) / S.factors.reduce((s,ff)=>s+ff.weight,0) * 10;
+      const cClass = contrib >= 2 ? 'v-hi' : contrib >= 1 ? 'v-md' : 'v-lo';
+      return `
+        <div class="dt-row">
+          <span class="dl">${h(f.name)} (weight ${f.weight})</span>
+          <span class="dv ${cClass}">+${contrib.toFixed(2)}</span>
+        </div>`;
+    }).join('');
+    return `${rows}<div class="dt-row"><span class="dl">Total weighted score</span><span class="dv">${score.toFixed(2)}/10</span></div>`;
+  }
+
+  let html = `
+    <div class="winner-box">
+      <div class="wlbl">Recommended Choice</div>
+      <div class="wname">${h(winner.o.name)}</div>
+      <div class="wsub">Weighted utility score: ${winner.score.toFixed(1)} / 10</div>
+      ${gutHtml}
+    </div>
+    <div class="insight-box">
+      <div class="insight-title">Key Insights</div>
+      ${insights.map(ins => `
+        <div class="insight-row">
+          <span class="insight-icon">${ins.icon}</span>
+          <span class="insight-text">${ins.text}</span>
+        </div>`).join('')}
+    </div>`;
+
+  ranked.forEach(({ o, i, score }) => {
+    const barPct = (score / maxScore) * 100;
+    const barColor = score >= 6.5 ? 'var(--good)' : score >= 4 ? 'var(--info)' : 'var(--bad)';
+    const scoreClass = score >= 6.5 ? 'score-hi' : score >= 4 ? 'score-md' : 'score-lo';
+    const letters = 'ABCDEFGHIJ';
+    const isWinner = i === winner.i;
+    html += `
+      <div class="res-card ${isWinner ? 'best' : ''}">
+        <div class="res-top">
+          <div class="res-name">
+            <div class="opt-letter">${letters[i]}</div>
+            ${h(o.name)}
+            ${isWinner ? '<span style="color:var(--warn);font-size:.95rem">★</span>' : ''}
+          </div>
+          <div class="res-score ${scoreClass}">${score.toFixed(1)}<span style="font-size:.9rem;color:var(--muted)">/10</span></div>
+        </div>
+        <div class="res-body">
+          <div class="res-bar-wrap">
+            <div class="res-bar" style="width:${barPct}%;background:${barColor}"></div>
+          </div>
+          <div class="section-lbl" style="margin-bottom:.65rem">Factor scores</div>
+          ${factorBars(i)}
+          <details>
+            <summary>Score breakdown</summary>
+            <div class="detail-table">${scoreTable(i, score)}</div>
+          </details>
+        </div>
+      </div>`;
+  });
+
+  // Comparison table
+  html += `
+    <div class="insight-box" style="margin-top:.5rem">
+      <div class="insight-title">Side-by-side comparison</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:.5rem .75rem;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)">Factor</th>
+              ${S.opts.map((o,i) => `<th style="text-align:right;padding:.5rem .75rem;color:var(--accent2);font-weight:700;border-bottom:1px solid var(--border)">${h(o.name)}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${perFactor.map(({ f, normVals }) => {
+              const best = Math.max(...normVals);
+              return `<tr>
+                <td style="padding:.45rem .75rem;color:var(--muted2);border-bottom:1px solid rgba(255,255,255,.04)">${h(f.name)}</td>
+                ${S.opts.map((_,oi) => {
+                  const isBest = normVals[oi] === best && normVals.some((v,j) => j!==oi && v !== best);
+                  return `<td style="text-align:right;padding:.45rem .75rem;border-bottom:1px solid rgba(255,255,255,.04);font-weight:${isBest?700:400};color:${isBest?'var(--good)':'var(--text)'}">${fmtVal(getVal(oi,f.id),f)}</td>`;
+                }).join('')}
+              </tr>`;
+            }).join('')}
+            <tr style="border-top:1px solid var(--border)">
+              <td style="padding:.55rem .75rem;font-weight:700;color:var(--text)">Weighted Score</td>
+              ${S.opts.map((_,i) => {
+                const s = scores[i];
+                const isBest = i === winner.i;
+                return `<td style="text-align:right;padding:.55rem .75rem;font-weight:800;color:${isBest?'var(--good)':'var(--text)'}">${s.toFixed(1)}/10</td>`;
+              }).join('')}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
 
   document.getElementById('resultsContainer').innerHTML = html;
 }
 
-// ─── Restart ───────────────────────────────────────────────────────────────
-function restart() {
-  S.decision = ''; S.hard = ''; S.urgency = 'month'; S.risk = 'neutral';
-  S.dimensions = []; S.options = []; S.gutChoice = null;
-  document.getElementById('decisionName').value = '';
-  document.getElementById('decisionHard').value = '';
-  showStep(1);
+function fmtVal(v, f) {
+  if (f.type === 'prob')  return v + '%';
+  if (f.type === 'yesno') return v ? 'Yes' : 'No';
+  if (f.type === 'number') return Number(v).toLocaleString();
+  return String(v);
 }
 
-// ─── Utils ─────────────────────────────────────────────────────────────────
-function escHtml(s) {
+// ── Restart ───────────────────────────────────────────────────────────────────
+function restart() {
+  S.decision = ''; S.opts = [{name:''},{name:''}]; S.factors = []; S.vals = {}; S.gut = null;
+  document.getElementById('decName').value = '';
+  renderOpts(); renderGut();
+  goStep(1);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function h(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// Init
+renderAddStars(3);
+renderFactorList();
 </script>
 </body>
 </html>
