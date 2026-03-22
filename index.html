@@ -643,7 +643,7 @@ function renderValues() {
                 oninput="setVal(${oi},'${f.id}',+this.value);document.getElementById('vv-${oi}-${f.id}').textContent=this.value" />
               <span class="sl-val" id="vv-${oi}-${f.id}">${v}</span>
             </div>
-            <div class="sl-ends"><span>1 — poor</span><span>10 — excellent</span></div>
+            <div class="sl-ends"><span>1</span><span>10</span></div>
           </div>`;
       } else if (f.type === 'prob') {
         input = `
