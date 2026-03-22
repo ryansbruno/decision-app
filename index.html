@@ -317,7 +317,7 @@
       <div class="card-desc">Describe the choice you're facing and add the options you're weighing.</div>
       <div class="field">
         <label>Decision</label>
-        <input type="text" id="decName" placeholder="e.g. Which grad school should I attend?" />
+        <input type="text" id="decName" placeholder="e.g. Should I take this opportunity?" />
       </div>
       <div class="field">
         <label>Options <span style="color:var(--muted);font-weight:400">(add at least 2)</span></label>
@@ -359,7 +359,7 @@
         <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end;margin-bottom:.75rem">
           <div class="field" style="margin:0">
             <label>Factor name</label>
-            <input type="text" id="fName" placeholder="e.g. Annual salary, Department quality, Commute time…" />
+            <input type="text" id="fName" placeholder="e.g. How happy will I be? How much does it cost?" />
           </div>
           <div class="field" style="margin:0">
             <label>Type</label>
@@ -438,21 +438,19 @@ let _uid = 0;
 const uid = () => 'f' + (++_uid);
 
 const QUICK = [
-  { name:'Financial impact',    type:'score',  weight:4, hi:true  },
-  { name:'Career growth',       type:'score',  weight:4, hi:true  },
-  { name:'Happiness',           type:'score',  weight:5, hi:true  },
-  { name:'Stress / difficulty', type:'score',  weight:3, hi:false },
-  { name:'Prestige',            type:'score',  weight:3, hi:true  },
-  { name:'Relationships',       type:'score',  weight:4, hi:true  },
-  { name:'Freedom / autonomy',  type:'score',  weight:3, hi:true  },
-  { name:'Location / vibe',     type:'score',  weight:3, hi:true  },
-  { name:'Salary / stipend',    type:'number', weight:4, hi:true  },
-  { name:'Cost / expense',      type:'number', weight:3, hi:false },
-  { name:'Commute (min)',       type:'number', weight:2, hi:false },
-  { name:'Probability of success', type:'prob', weight:4, hi:true },
-  { name:'Placement rate',      type:'prob',   weight:4, hi:true  },
-  { name:'Health insurance',    type:'yesno',  weight:3, hi:true  },
-  { name:'Remote-friendly',     type:'yesno',  weight:3, hi:true  },
+  { name:'Happiness / enjoyment',  type:'score',  weight:5, hi:true  },
+  { name:'Financial impact',       type:'score',  weight:4, hi:true  },
+  { name:'Stress level',           type:'score',  weight:3, hi:false },
+  { name:'Time required',          type:'score',  weight:3, hi:false },
+  { name:'Growth & learning',      type:'score',  weight:4, hi:true  },
+  { name:'Impact on others',       type:'score',  weight:4, hi:true  },
+  { name:'Alignment with values',  type:'score',  weight:5, hi:true  },
+  { name:'Freedom / flexibility',  type:'score',  weight:3, hi:true  },
+  { name:'Risk / downside',        type:'score',  weight:3, hi:false },
+  { name:'Reversibility',          type:'score',  weight:2, hi:true  },
+  { name:'Cost',                   type:'number', weight:3, hi:false },
+  { name:'Likelihood it works out',type:'prob',   weight:4, hi:true  },
+  { name:'Regret if I don\'t do it', type:'score', weight:4, hi:false },
 ];
 
 // ── Progress ─────────────────────────────────────────────────────────────────
