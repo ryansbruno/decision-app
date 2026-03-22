@@ -544,7 +544,7 @@ function renderAddStars(w) {
 }
 
 document.getElementById('fType').addEventListener('change', function() {
-  document.getElementById('dirToggleWrap').classList.toggle('hidden', this.value !== 'number');
+  document.getElementById('dirToggleWrap').classList.toggle('hidden', this.value !== 'number' && this.value !== 'score');
 });
 
 function setDir(hi) {
@@ -557,7 +557,7 @@ function addFactor() {
   const name = document.getElementById('fName').value.trim();
   if (!name) return alert('Enter a factor name.');
   const type = document.getElementById('fType').value;
-  S.factors.push({ id:uid(), name, type, weight:S.addWeight, higherBetter: type==='number' ? S.addHigherBetter : true });
+  S.factors.push({ id:uid(), name, type, weight:S.addWeight, higherBetter: (type==='number' || type==='score') ? S.addHigherBetter : true });
   document.getElementById('fName').value = '';
   renderFactorList();
   renderQuickChips();
@@ -598,7 +598,7 @@ function renderFactorList() {
             <div class="factor-name-big">${h(f.name)}</div>
             <div class="factor-meta">
               <span class="type-badge ${ti.cls}">${ti.label}</span>
-              ${f.type === 'number' ? `<span style="font-size:.75rem;color:var(--muted)">${f.higherBetter ? '↑ higher better' : '↓ lower better'}</span>` : ''}
+              ${(f.type === 'number' || f.type === 'score') ? `<span style="font-size:.75rem;color:var(--muted)">${f.higherBetter ? '↑ higher better' : '↓ lower better'}</span>` : ''}
               <div class="stars">${stars}</div>
             </div>
           </div>
@@ -691,7 +691,7 @@ function renderValues() {
           <div class="vfb-title">
             <span>${h(f.name)}</span>
             <span class="type-badge ${ti.cls}">${ti.label}</span>
-            ${f.type==='number' ? `<span style="font-size:.72rem;color:var(--muted)">${f.higherBetter?'↑ higher better':'↓ lower better'}</span>` : ''}
+            ${(f.type==='number' || f.type==='score') ? `<span style="font-size:.72rem;color:var(--muted)">${f.higherBetter?'↑ higher better':'↓ lower better'}</span>` : ''}
           </div>
           <div class="stars">${[1,2,3,4,5].filter(n=>n<=f.weight).map(()=>'★').join('')}</div>
         </div>
@@ -728,7 +728,7 @@ function calcScores() {
     const rawVals = S.opts.map((_, oi) => getVal(oi, f.id));
     let normVals;
     if (f.type === 'score') {
-      normVals = rawVals.map(v => (v - 1) / 9); // 1-10 → 0-1
+      normVals = rawVals.map(v => f.higherBetter ? (v - 1) / 9 : (10 - v) / 9);
     } else if (f.type === 'prob') {
       normVals = rawVals.map(v => v / 100);      // 0-100 → 0-1
     } else if (f.type === 'yesno') {
