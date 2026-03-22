@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expected Value Decision Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3348;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --text: #e8eaf0;
+      --muted: #7b82a0;
+      --good: #34d399;
+      --bad: #f87171;
+      --warn: #fbbf24;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header p {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+    }
+
+    /* Steps indicator */
+    .steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 2rem;
+    }
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--surface2);
+      color: var(--muted);
+      border: 2px solid var(--border);
+      transition: all 0.3s;
+      position: relative;
+      z-index: 1;
+    }
+    .step-dot.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .step-dot.done {
+      background: var(--good);
+      color: #000;
+      border-color: var(--good);
+    }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      max-width: 80px;
+    }
+    .step-line.done { background: var(--good); }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      color: var(--text);
+    }
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Form elements */
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 0.65rem 0.9rem;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+    textarea { resize: vertical; min-height: 60px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #5b52e0; }
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger {
+      background: transparent;
+      color: var(--bad);
+      border: 1px solid transparent;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.8rem;
+    }
+    .btn-danger:hover { border-color: var(--bad); background: rgba(248,113,113,0.08); }
+    .btn-lg {
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Slider */
+    .slider-wrap {
+      margin: 0.75rem 0;
+    }
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    .slider-value {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 1rem;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    /* Option cards */
+    .option-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .option-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .option-name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--accent2);
+    }
+
+    /* Outcome rows */
+    .outcome-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+    .outcome-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .outcome-num {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .prob-bar-wrap {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+    .prob-bar {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+
+    .prob-sum {
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      text-align: right;
+    }
+    .prob-sum.ok { color: var(--good); }
+    .prob-sum.warn { color: var(--warn); }
+    .prob-sum.over { color: var(--bad); }
+
+    /* Results */
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    .result-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .result-ev {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+    .ev-positive { color: var(--good); }
+    .ev-negative { color: var(--bad); }
+    .ev-neutral { color: var(--warn); }
+
+    .result-bar-wrap {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      margin: 0.75rem 0;
+      overflow: hidden;
+    }
+    .result-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+
+    .outcome-breakdown {
+      margin-top: 1rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-label { color: var(--muted); flex: 1; }
+    .breakdown-calc { color: var(--text); font-family: monospace; font-size: 0.8rem; }
+    .breakdown-contrib {
+      font-weight: 600;
+      width: 60px;
+      text-align: right;
+    }
+
+    .winner-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--good);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      border-radius: 20px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .recommendation {
+      background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(167,139,250,0.1));
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .recommendation h3 {
+      color: var(--accent2);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+    .recommendation p {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    /* Utility color */
+    .util-positive { color: var(--good); }
+    .util-negative { color: var(--bad); }
+
+    /* Grid */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* Action row */
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+    }
+
+    /* Section heading */
+    .section-heading {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .add-outcome-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    /* Importance */
+    .importance-section {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Tooltip */
+    .tooltip {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      text-align: center;
+      line-height: 14px;
+      font-size: 0.65rem;
+      color: var(--muted);
+      cursor: help;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 480px) {
+      .two-col { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Expected Value Decision Tool</h1>
+  <p>Make better decisions using expected utility theory</p>
+</header>
+
+<div class="container">
+
+  <!-- Step indicator -->
+  <div class="steps" id="stepsIndicator">
+    <div class="step-dot active" id="dot1">1</div>
+    <div class="step-line" id="line12"></div>
+    <div class="step-dot" id="dot2">2</div>
+    <div class="step-line" id="line23"></div>
+    <div class="step-dot" id="dot3">3</div>
+    <div class="step-line" id="line34"></div>
+    <div class="step-dot" id="dot4">4</div>
+  </div>
+
+  <!-- Step 1: Decision setup -->
+  <div id="step1">
+    <div class="card">
+      <div class="card-title">What decision are you facing?</div>
+      <div style="margin-bottom:1.25rem;">
+        <label>Describe the decision</label>
+        <input type="text" id="decisionName" placeholder="e.g. Should I accept the job offer?" />
+      </div>
+
+      <div class="importance-section">
+        <div class="card-title" style="margin-bottom:0.5rem;">How important is this decision to you?
+          <span class="tooltip" title="This scales all utilities — a 10/10 decision matters more than a 3/10 one">?</span>
+        </div>
+        <div class="card-subtitle" style="margin-bottom:0.75rem;">This weights the overall stakes of the decision.</div>
+        <div class="slider-wrap">
+          <div class="slider-label-row">
+            <span>Not important</span>
+            <span class="slider-value" id="importanceVal">5</span>
+            <span>Extremely important</span>
+          </div>
+          <input type="range" min="1" max="10" value="5" id="importanceSlider" />
+        </div>
+      </div>
+
+      <div>
+        <label>Time horizon</label>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.25rem;" id="timeHorizonBtns">
+          <button class="btn btn-secondary time-btn active" data-val="short">Short-term (&lt;1yr)</button>
+          <button class="btn btn-secondary time-btn" data-val="medium">Medium (1–5yr)</button>
+          <button class="btn btn-secondary time-btn" data-val="long">Long-term (5yr+)</button>
+        </div>
+      </div>
+    </div>
+    <div class="action-row">
+      <div></div>
+      <button class="btn btn-primary btn-lg" onclick="goStep2()">Add Options →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Add options -->
+  <div id="step2" class="hidden">
+    <div class="card">
+      <div class="card-title">What are your options?</div>
+      <div class="card-subtitle">Add at least 2 options you're choosing between.</div>
+      <div id="optionsList"></div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:0.5rem;" onclick="addOption()">+ Add another option</button>
+    </div>
+    <div class="action-row">
+      <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary btn-lg" onclick="goStep3()">Add Outcomes →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Outcomes per option -->
+  <div id="step3" class="hidden">
+    <div class="card" style="margin-bottom:0.5rem;">
+      <div class="card-title">What could happen for each option?</div>
+      <div class="card-subtitle">For each option, add possible outcomes. Set the probability and how good or bad each outcome would be for you.</div>
+    </div>
+    <div id="outcomesContainer"></div>
+    <div class="action-row">
+      <button class="btn btn-secondary" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary btn-lg" onclick="goResults()">Calculate EV →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Results -->
+  <div id="step4" class="hidden">
+    <div id="resultsContainer"></div>
+    <div style="text-align:center;margin-top:1rem;">
+      <button class="btn btn-secondary" onclick="goStep(3)">← Adjust</button>
+      <button class="btn btn-ghost" onclick="restart()" style="margin-left:0.75rem;">Start Over</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const state = {
+    decision: '',
+    importance: 5,
+    timeHorizon: 'short',
+    options: []
+  };
+
+  // --- Slider wiring ---
+  document.getElementById('importanceSlider').addEventListener('input', function() {
+    state.importance = +this.value;
+    document.getElementById('importanceVal').textContent = this.value;
+  });
+
+  document.querySelectorAll('.time-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      state.timeHorizon = this.dataset.val;
+    });
+  });
+
+  // --- Navigation ---
+  function showStep(n) {
+    [1,2,3,4].forEach(i => {
+      document.getElementById('step'+i).classList.toggle('hidden', i !== n);
+      const dot = document.getElementById('dot'+i);
+      dot.classList.toggle('active', i === n);
+      dot.classList.toggle('done', i < n);
+    });
+    [['line12',1],['line23',2],['line34',3]].forEach(([id,n2]) => {
+      document.getElementById(id).classList.toggle('done', n > n2);
+    });
+  }
+
+  function goStep2() {
+    const name = document.getElementById('decisionName').value.trim();
+    if (!name) { alert('Please describe your decision first.'); return; }
+    state.decision = name;
+    if (state.options.length === 0) {
+      addOption(); addOption();
+    }
+    renderOptions();
+    showStep(2);
+  }
+
+  function goStep(n) {
+    if (n === 2) renderOptions();
+    if (n === 3) renderOutcomes();
+    showStep(n);
+  }
+
+  function goStep3() {
+    const inputs = document.querySelectorAll('.option-input');
+    const names = [];
+    inputs.forEach((inp, i) => {
+      const val = inp.value.trim() || `Option ${i+1}`;
+      names.push(val);
+    });
+    if (names.length < 2) { alert('Please add at least 2 options.'); return; }
+    // Sync names back to state
+    names.forEach((name, i) => {
+      if (!state.options[i]) state.options[i] = { name, outcomes: [] };
+      else state.options[i].name = name;
+    });
+    state.options = state.options.slice(0, names.length);
+    // Ensure each option has at least 2 outcomes
+    state.options.forEach(opt => {
+      while (opt.outcomes.length < 2) opt.outcomes.push(defaultOutcome());
+    });
+    renderOutcomes();
+    showStep(3);
+  }
+
+  function goResults() {
+    // Collect all outcome data
+    let valid = true;
+    state.options.forEach((opt, oi) => {
+      opt.outcomes.forEach((out, oi2) => {
+        const nameEl = document.getElementById(`out-name-${oi}-${oi2}`);
+        const probEl = document.getElementById(`out-prob-${oi}-${oi2}`);
+        const utilEl = document.getElementById(`out-util-${oi}-${oi2}`);
+        if (nameEl) out.name = nameEl.value.trim() || `Outcome ${oi2+1}`;
+        if (probEl) out.prob = +probEl.value;
+        if (utilEl) out.util = +utilEl.value;
+      });
+      const total = opt.outcomes.reduce((s, o) => s + o.prob, 0);
+      if (Math.abs(total - 100) > 0.5) {
+        valid = false;
+        alert(`Probabilities for "${opt.name}" sum to ${total.toFixed(0)}%. They should sum to 100%.`);
+      }
+    });
+    if (!valid) return;
+    renderResults();
+    showStep(4);
+  }
+
+  function restart() {
+    state.decision = '';
+    state.importance = 5;
+    state.options = [];
+    document.getElementById('decisionName').value = '';
+    document.getElementById('importanceSlider').value = 5;
+    document.getElementById('importanceVal').textContent = '5';
+    showStep(1);
+  }
+
+  // --- Options ---
+  function defaultOutcome() {
+    return { name: '', prob: 50, util: 5 };
+  }
+
+  function addOption() {
+    state.options.push({ name: '', outcomes: [] });
+    renderOptions();
+  }
+
+  function removeOption(i) {
+    if (state.options.length <= 2) { alert('You need at least 2 options.'); return; }
+    state.options.splice(i, 1);
+    renderOptions();
+  }
+
+  function renderOptions() {
+    const el = document.getElementById('optionsList');
+    el.innerHTML = state.options.map((opt, i) => `
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+        <input class="option-input" type="text" value="${escHtml(opt.name)}" placeholder="Option ${i+1} name" style="flex:1;" />
+        ${state.options.length > 2 ? `<button class="btn btn-danger" onclick="removeOption(${i})">✕</button>` : ''}
+      </div>
+    `).join('');
+  }
+
+  // --- Outcomes ---
+  function addOutcome(oi) {
+    state.options[oi].outcomes.push(defaultOutcome());
+    // Read current values before re-render
+    syncOutcomes();
+    renderOutcomes();
+  }
+
+  function removeOutcome(oi, oi2) {
+    if (state.options[oi].outcomes.length <= 1) { alert('Each option needs at least one outcome.'); return; }
+    syncOutcomes();
+    state.options[oi].outcomes.splice(oi2, 1);
+    renderOutcomes();
+  }
+
+  function syncOutcomes() {
+    state.options.forEach((opt, oi) => {
+      opt.outcomes.forEach((out, oi2) => {
+        const nameEl = document.getElementById(`out-name-${oi}-${oi2}`);
+        const probEl = document.getElementById(`out-prob-${oi}-${oi2}`);
+        const utilEl = document.getElementById(`out-util-${oi}-${oi2}`);
+        if (nameEl) out.name = nameEl.value.trim();
+        if (probEl) out.prob = +probEl.value;
+        if (utilEl) out.util = +utilEl.value;
+      });
+    });
+  }
+
+  function updateProb(oi, oi2, val) {
+    state.options[oi].outcomes[oi2].prob = +val;
+    document.getElementById(`prob-val-${oi}-${oi2}`).textContent = val + '%';
+    document.getElementById(`prob-bar-${oi}-${oi2}`).style.width = val + '%';
+    updateProbSum(oi);
+  }
+
+  function updateUtil(oi, oi2, val) {
+    state.options[oi].outcomes[oi2].util = +val;
+    const display = document.getElementById(`util-val-${oi}-${oi2}`);
+    display.textContent = val > 0 ? '+'+val : val;
+    display.className = 'slider-value ' + (val > 0 ? 'util-positive' : val < 0 ? 'util-negative' : '');
+    // update gradient
+    const pct = ((+val + 10) / 20) * 100;
+    document.getElementById(`util-range-${oi}-${oi2}`).style.background =
+      `linear-gradient(to right, var(--bad) 0%, var(--border) 50%, var(--good) 100%)`;
+  }
+
+  function updateProbSum(oi) {
+    const outcomes = state.options[oi].outcomes;
+    const total = outcomes.reduce((s, o) => s + o.prob, 0);
+    const el = document.getElementById(`prob-sum-${oi}`);
+    el.textContent = `Probabilities sum to ${total}%${total === 100 ? ' ✓' : ' (should equal 100%)'}`;
+    el.className = 'prob-sum ' + (total === 100 ? 'ok' : total > 100 ? 'over' : 'warn');
+  }
+
+  function renderOutcomes() {
+    const container = document.getElementById('outcomesContainer');
+    container.innerHTML = state.options.map((opt, oi) => `
+      <div class="option-card">
+        <div class="option-header">
+          <div class="option-name">${escHtml(opt.name)}</div>
+        </div>
+        <div class="section-heading">Possible Outcomes</div>
+        <div id="outcomes-${oi}">
+          ${opt.outcomes.map((out, oi2) => renderOutcomeRow(opt, oi, out, oi2)).join('')}
+        </div>
+        <div class="prob-sum warn" id="prob-sum-${oi}"></div>
+        <button class="btn btn-ghost add-outcome-btn" onclick="addOutcome(${oi})">+ Add outcome</button>
+      </div>
+    `).join('');
+    // init prob sums and util gradients
+    state.options.forEach((opt, oi) => {
+      updateProbSum(oi);
+      opt.outcomes.forEach((out, oi2) => {
+        updateUtil(oi, oi2, out.util);
+      });
+    });
+  }
+
+  function renderOutcomeRow(opt, oi, out, oi2) {
+    const utilColor = out.util > 0 ? 'util-positive' : out.util < 0 ? 'util-negative' : '';
+    const utilDisplay = out.util > 0 ? '+'+out.util : out.util;
+    return `
+      <div class="outcome-row">
+        <div class="outcome-header">
+          <span class="outcome-num">Outcome ${oi2+1}</span>
+          ${opt.outcomes.length > 1 ? `<button class="btn btn-danger" onclick="removeOutcome(${oi},${oi2})">✕</button>` : ''}
+        </div>
+        <div style="margin-bottom:0.75rem;">
+          <label>What is this outcome?</label>
+          <input type="text" id="out-name-${oi}-${oi2}" value="${escHtml(out.name)}" placeholder="e.g. It goes really well" />
+        </div>
+        <div class="two-col">
+          <div class="slider-wrap">
+            <label>Probability</label>
+            <div class="slider-label-row">
+              <span>0%</span>
+              <span class="slider-value" id="prob-val-${oi}-${oi2}">${out.prob}%</span>
+              <span>100%</span>
+            </div>
+            <input type="range" min="0" max="100" value="${out.prob}"
+              id="out-prob-${oi}-${oi2}"
+              oninput="updateProb(${oi},${oi2},this.value)" />
+            <div class="prob-bar-wrap">
+              <div class="prob-bar" id="prob-bar-${oi}-${oi2}" style="width:${out.prob}%"></div>
+            </div>
+          </div>
+          <div class="slider-wrap">
+            <label>How good or bad? <span class="tooltip" title="−10 = catastrophic, 0 = neutral, +10 = amazing">?</span></label>
+            <div class="slider-label-row">
+              <span>−10</span>
+              <span class="slider-value ${utilColor}" id="util-val-${oi}-${oi2}">${utilDisplay}</span>
+              <span>+10</span>
+            </div>
+            <input type="range" min="-10" max="10" value="${out.util}"
+              id="util-range-${oi}-${oi2}"
+              oninput="updateUtil(${oi},${oi2},this.value); state.options[${oi}].outcomes[${oi2}].util=+this.value;"
+              style="background: linear-gradient(to right, var(--bad) 0%, var(--border) 50%, var(--good) 100%)" />
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // --- Results ---
+  function calcEV(opt) {
+    const raw = opt.outcomes.reduce((sum, o) => sum + (o.prob / 100) * o.util, 0);
+    return raw * state.importance;
+  }
+
+  function renderResults() {
+    const evs = state.options.map(opt => ({ opt, ev: calcEV(opt) }));
+    evs.sort((a, b) => b.ev - a.ev);
+    const maxAbsEV = Math.max(...evs.map(e => Math.abs(e.ev)), 0.01);
+    const winner = evs[0];
+
+    const timeLabels = { short: 'short-term', medium: 'medium-term', long: 'long-term' };
+
+    let html = `
+      <div class="recommendation">
+        <h3>Recommendation</h3>
+        <p>Based on expected utility, <strong>${escHtml(winner.opt.name)}</strong> is the best choice
+        for your ${timeLabels[state.timeHorizon]} decision about "${escHtml(state.decision)}".</p>
+      </div>
+    `;
+
+    evs.forEach(({ opt, ev }, rank) => {
+      const isWinner = rank === 0;
+      const evClass = ev > 0 ? 'ev-positive' : ev < 0 ? 'ev-negative' : 'ev-neutral';
+      const barPct = Math.min((Math.abs(ev) / maxAbsEV) * 100, 100);
+      const barColor = ev > 0 ? 'var(--good)' : ev < 0 ? 'var(--bad)' : 'var(--warn)';
+
+      const breakdownRows = opt.outcomes.map(o => {
+        const contrib = (o.prob / 100) * o.util * state.importance;
+        const contribClass = contrib > 0 ? 'util-positive' : contrib < 0 ? 'util-negative' : '';
+        return `
+          <div class="breakdown-row">
+            <span class="breakdown-label">${escHtml(o.name || 'Unnamed outcome')}</span>
+            <span class="breakdown-calc">${o.prob}% × ${o.util > 0 ? '+' : ''}${o.util} × ${state.importance}</span>
+            <span class="breakdown-contrib ${contribClass}">${contrib > 0 ? '+' : ''}${contrib.toFixed(2)}</span>
+          </div>
+        `;
+      }).join('');
+
+      html += `
+        <div class="result-card">
+          <div class="result-header">
+            <div>
+              <div class="result-name">${escHtml(opt.name)}</div>
+              ${isWinner ? '<div class="winner-badge" style="margin-top:0.4rem;">★ Best choice</div>' : ''}
+            </div>
+            <div class="result-ev ${evClass}">EV ${ev > 0 ? '+' : ''}${ev.toFixed(2)}</div>
+          </div>
+          <div class="result-bar-wrap">
+            <div class="result-bar" style="width:${barPct}%;background:${barColor}"></div>
+          </div>
+          <details>
+            <summary style="cursor:pointer;font-size:0.85rem;color:var(--muted);margin-top:0.75rem;">Show breakdown</summary>
+            <div class="outcome-breakdown">
+              <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.5rem;font-family:monospace;">
+                EV = Σ (probability × utility × importance weight)
+              </div>
+              ${breakdownRows}
+              <div class="breakdown-row" style="border-top:1px solid var(--border);padding-top:0.5rem;font-weight:700;">
+                <span class="breakdown-label">Total EV</span>
+                <span></span>
+                <span class="breakdown-contrib ${evClass}">${ev > 0 ? '+' : ''}${ev.toFixed(2)}</span>
+              </div>
+            </div>
+          </details>
+        </div>
+      `;
+    });
+
+    document.getElementById('resultsContainer').innerHTML = html;
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
